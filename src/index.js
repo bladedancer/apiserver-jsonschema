@@ -32,9 +32,14 @@ for (let schemaKey in componentSchemas.components.schemas) {
         schema.required.push('metadata');
     }
 
-    // TODO: HANDLE MULTIPLE SCOPES
+    let suffix = '';
+    if (schema['x-axway-scoped']) {
+        suffix = ' (' + schema['x-axway-scopes'].map(scope => scope.kind )
+            .join(" | ") + ')';
+    }
+
     componentSchemas.oneOf.push({
-        'title': `${schema['x-axway-kind']}`,
+        'title': `${schema['x-axway-kind']}${suffix}`,
         '$ref': `#/components/schemas/${schemaKey}`
     });
 }

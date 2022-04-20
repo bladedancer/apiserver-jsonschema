@@ -7,15 +7,15 @@
             "$ref": "#/components/schemas/management.v1alpha1.WatchTopic"
         },
         {
-            "title": "DiscoveryAgent",
+            "title": "DiscoveryAgent (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.DiscoveryAgent"
         },
         {
-            "title": "TraceabilityAgent",
+            "title": "TraceabilityAgent (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.TraceabilityAgent"
         },
         {
-            "title": "GovernanceAgent",
+            "title": "GovernanceAgent (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.GovernanceAgent"
         },
         {
@@ -47,7 +47,7 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.Application"
         },
         {
-            "title": "Credential",
+            "title": "Credential (Application)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Credential"
         },
         {
@@ -59,23 +59,23 @@
             "$ref": "#/components/schemas/management.v1alpha1.Environment"
         },
         {
-            "title": "APIService",
+            "title": "APIService (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.APIService"
         },
         {
-            "title": "APIServiceRevision",
+            "title": "APIServiceRevision (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.APIServiceRevision"
         },
         {
-            "title": "APIServiceInstance",
+            "title": "APIServiceInstance (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.APIServiceInstance"
         },
         {
-            "title": "ConsumerInstance",
+            "title": "ConsumerInstance (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.ConsumerInstance"
         },
         {
-            "title": "ConsumerSubscriptionDefinition",
+            "title": "ConsumerSubscriptionDefinition (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.ConsumerSubscriptionDefinition"
         },
         {
@@ -83,7 +83,7 @@
             "$ref": "#/components/schemas/management.v1alpha1.Integration"
         },
         {
-            "title": "ResourceHook",
+            "title": "ResourceHook (Integration)",
             "$ref": "#/components/schemas/management.v1alpha1.ResourceHook"
         },
         {
@@ -91,11 +91,11 @@
             "$ref": "#/components/schemas/management.v1alpha1.K8SCluster"
         },
         {
-            "title": "K8SResource",
+            "title": "K8SResource (K8SCluster)",
             "$ref": "#/components/schemas/management.v1alpha1.K8SResource"
         },
         {
-            "title": "ResourceDiscovery",
+            "title": "ResourceDiscovery (K8SCluster)",
             "$ref": "#/components/schemas/management.v1alpha1.ResourceDiscovery"
         },
         {
@@ -103,59 +103,59 @@
             "$ref": "#/components/schemas/management.v1alpha1.Mesh"
         },
         {
-            "title": "SpecDiscovery",
+            "title": "SpecDiscovery (K8SCluster)",
             "$ref": "#/components/schemas/management.v1alpha1.SpecDiscovery"
         },
         {
-            "title": "APISpec",
+            "title": "APISpec (K8SCluster)",
             "$ref": "#/components/schemas/management.v1alpha1.APISpec"
         },
         {
-            "title": "MeshWorkload",
+            "title": "MeshWorkload (Mesh)",
             "$ref": "#/components/schemas/management.v1alpha1.MeshWorkload"
         },
         {
-            "title": "MeshService",
+            "title": "MeshService (Mesh)",
             "$ref": "#/components/schemas/management.v1alpha1.MeshService"
         },
         {
-            "title": "MeshDiscovery",
+            "title": "MeshDiscovery (Mesh)",
             "$ref": "#/components/schemas/management.v1alpha1.MeshDiscovery"
         },
         {
-            "title": "AssetMappingTemplate",
+            "title": "AssetMappingTemplate (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.AssetMappingTemplate"
         },
         {
-            "title": "AccessRequestDefinition",
+            "title": "AccessRequestDefinition (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.AccessRequestDefinition"
         },
         {
-            "title": "AccessRequest",
+            "title": "AccessRequest (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.AccessRequest"
         },
         {
-            "title": "Deployment",
+            "title": "Deployment (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.Deployment"
         },
         {
-            "title": "AmplifyConfig",
+            "title": "AmplifyConfig (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.AmplifyConfig"
         },
         {
-            "title": "AmplifyRuntimeConfig",
+            "title": "AmplifyRuntimeConfig (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.AmplifyRuntimeConfig"
         },
         {
-            "title": "VirtualHost",
+            "title": "VirtualHost (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.VirtualHost"
         },
         {
-            "title": "ManagedApplication",
+            "title": "ManagedApplication (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.ManagedApplication"
         },
         {
-            "title": "Credential",
+            "title": "Credential (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.Credential"
         },
         {
@@ -175,7 +175,7 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.Marketplace"
         },
         {
-            "title": "PublishedProduct",
+            "title": "PublishedProduct (Marketplace)",
             "$ref": "#/components/schemas/catalog.v1alpha1.PublishedProduct"
         },
         {
@@ -203,11 +203,11 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlan"
         },
         {
-            "title": "Quota",
+            "title": "Quota (ProductPlan)",
             "$ref": "#/components/schemas/catalog.v1.Quota"
         },
         {
-            "title": "Quota",
+            "title": "Quota (ProductPlan)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Quota"
         },
         {
@@ -215,131 +215,131 @@
             "$ref": "#/components/schemas/definitions.v1alpha1.ResourceGroup"
         },
         {
-            "title": "ResourceDefinition",
+            "title": "ResourceDefinition (ResourceGroup)",
             "$ref": "#/components/schemas/definitions.v1alpha1.ResourceDefinition"
         },
         {
-            "title": "ResourceDefinitionVersion",
+            "title": "ResourceDefinitionVersion (ResourceGroup)",
             "$ref": "#/components/schemas/definitions.v1alpha1.ResourceDefinitionVersion"
         },
         {
-            "title": "CommandLineInterface",
+            "title": "CommandLineInterface (ResourceGroup)",
             "$ref": "#/components/schemas/definitions.v1alpha1.CommandLineInterface"
         },
         {
-            "title": "CorsRule",
+            "title": "CorsRule (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.CorsRule"
         },
         {
-            "title": "AmplifyJWTAuthRule",
+            "title": "AmplifyJWTAuthRule (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.AmplifyJWTAuthRule"
         },
         {
-            "title": "AmplifyOAuth2AuthRule",
+            "title": "AmplifyOAuth2AuthRule (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.AmplifyOAuth2AuthRule"
         },
         {
-            "title": "APIKeyAuthRule",
+            "title": "APIKeyAuthRule (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.APIKeyAuthRule"
         },
         {
-            "title": "AssetMapping",
+            "title": "AssetMapping (Asset)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AssetMapping"
         },
         {
-            "title": "AssetMapping",
+            "title": "AssetMapping (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.AssetMapping"
         },
         {
-            "title": "AssetResource",
+            "title": "AssetResource (Asset | AssetRelease)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AssetResource"
         },
         {
-            "title": "AssetRequestDefinition",
+            "title": "AssetRequestDefinition (AuthorizationProfile)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestDefinition"
         },
         {
-            "title": "AssetRequest",
+            "title": "AssetRequest (Application)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequest"
         },
         {
-            "title": "ExternalSecret",
+            "title": "ExternalSecret (Environment | VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.ExternalSecret"
         },
         {
-            "title": "VirtualService",
+            "title": "VirtualService (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.VirtualService"
         },
         {
-            "title": "OAS3Document",
+            "title": "OAS3Document (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.OAS3Document"
         },
         {
-            "title": "Document",
+            "title": "Document (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1.Document"
         },
         {
-            "title": "Document",
+            "title": "Document (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Document"
         },
         {
-            "title": "Resource",
+            "title": "Resource (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1.Resource"
         },
         {
-            "title": "Resource",
+            "title": "Resource (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Resource"
         },
         {
-            "title": "ProductOverview",
+            "title": "ProductOverview (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1.ProductOverview"
         },
         {
-            "title": "ProductOverview",
+            "title": "ProductOverview (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1alpha1.ProductOverview"
         },
         {
-            "title": "Webhook",
+            "title": "Webhook (Environment | Integration)",
             "$ref": "#/components/schemas/management.v1alpha1.Webhook"
         },
         {
-            "title": "Webhook",
+            "title": "Webhook (AuthorizationProfile)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Webhook"
         },
         {
-            "title": "ReleaseTag",
+            "title": "ReleaseTag (Asset | Product)",
             "$ref": "#/components/schemas/catalog.v1alpha1.ReleaseTag"
         },
         {
-            "title": "ReleaseTag",
+            "title": "ReleaseTag (VirtualAPI)",
             "$ref": "#/components/schemas/management.v1alpha1.ReleaseTag"
         },
         {
-            "title": "CredentialRequestDefinition",
+            "title": "CredentialRequestDefinition (Environment)",
             "$ref": "#/components/schemas/management.v1alpha1.CredentialRequestDefinition"
         },
         {
-            "title": "CredentialRequestDefinition",
+            "title": "CredentialRequestDefinition (AuthorizationProfile)",
             "$ref": "#/components/schemas/catalog.v1alpha1.CredentialRequestDefinition"
         },
         {
-            "title": "Secret",
+            "title": "Secret (Environment | Integration)",
             "$ref": "#/components/schemas/management.v1alpha1.Secret"
         },
         {
-            "title": "Secret",
+            "title": "Secret (AuthorizationProfile)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Secret"
         },
         {
-            "title": "AccessControlList",
+            "title": "AccessControlList (Product | AuthorizationProfile | Application | ProductPlanUnit | Marketplace | Category | ProductRelease | Subscription | Stage | AssetRelease | Asset | ProductPlan)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
         },
         {
-            "title": "AccessControlList",
+            "title": "AccessControlList (K8SCluster | VirtualAPIRelease | Environment | Mesh | WatchTopic | Integration | VirtualAPI)",
             "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
         },
         {
-            "title": "AccessControlList",
+            "title": "AccessControlList (ResourceGroup)",
             "$ref": "#/components/schemas/definitions.v1alpha1.AccessControlList"
         }
     ],
