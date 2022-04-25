@@ -331,12 +331,12 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.Secret"
         },
         {
-            "title": "AccessControlList (Product | AuthorizationProfile | Application | ProductPlanUnit | Marketplace | Category | ProductRelease | Subscription | Stage | AssetRelease | Asset | ProductPlan)",
-            "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
+            "title": "AccessControlList (VirtualAPIRelease | Environment | Mesh | VirtualAPI | Integration | WatchTopic | K8SCluster)",
+            "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
         },
         {
-            "title": "AccessControlList (K8SCluster | VirtualAPIRelease | Environment | Mesh | WatchTopic | Integration | VirtualAPI)",
-            "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
+            "title": "AccessControlList (AssetRelease | Category | ProductPlanUnit | ProductPlan | Product | Asset | Marketplace | AuthorizationProfile | Application | Subscription | Stage | ProductRelease)",
+            "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
         },
         {
             "title": "AccessControlList (ResourceGroup)",
@@ -410,6 +410,11 @@
                                 "maxLength": 100,
                                 "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
                                 "description": "The name of the scope where the resource is defined."
+                            },
+                            "title": {
+                                "type": "string",
+                                "maxLength": 350,
+                                "description": "The title of the scope where the resource is defined."
                             },
                             "selfLink": {
                                 "type": "string",
@@ -4228,7 +4233,8 @@
                 "x-axway-plural": "apiservices",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
-                    "status"
+                    "status",
+                    "details"
                 ],
                 "x-axway-scopes": [
                     {
@@ -4466,6 +4472,9 @@
                     },
                     "status": {
                         "$ref": "#/components/schemas/management.v1alpha1.APIServiceStatus"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/management.v1alpha1.APIServiceDetails"
                     }
                 },
                 "required": [
@@ -4580,6 +4589,16 @@
                     "timestamp"
                 ],
                 "additionalProperties": true
+            },
+            "management.v1alpha1.APIServiceDetails": {
+                "type": "object",
+                "properties": {
+                    "specType": {
+                        "type": "string",
+                        "description": "Specification type for the API Service.",
+                        "x-amplify-index": {}
+                    }
+                }
             },
             "management.v1alpha1.APIServiceRevision": {
                 "description": "Definition of APIServiceRevision for version v1alpha1 in group management. \n\n Resource representing an Amplify Central API Service Revision",
@@ -11783,20 +11802,6 @@
                             "types": [
                                 "SOFT"
                             ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "Quota",
-                            "scopeKind": "ProductPlan",
-                            "plural": "quotas",
-                            "subResourceName": "references",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
-                            ]
                         }
                     ],
                     "toResources": [
@@ -12207,20 +12212,6 @@
                             ],
                             "types": [
                                 "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "Quota",
-                            "scopeKind": "ProductPlan",
-                            "plural": "quotas",
-                            "subResourceName": "references",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
                             ]
                         }
                     ],
@@ -12955,7 +12946,6 @@
                 "x-axway-plural": "quotas",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
-                    "references",
                     "status"
                 ],
                 "x-axway-scopes": [
@@ -12970,25 +12960,13 @@
                         {
                             "group": "catalog",
                             "kind": "AssetResource",
-                            "scopeKind": "AssetRelease",
+                            "scopeKind": "Asset",
                             "plural": "assetresources",
                             "versions": [
                                 "v1alpha1"
                             ],
                             "types": [
                                 "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "ProductRelease",
-                            "plural": "productreleases",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
                             ]
                         },
                         {
@@ -13102,9 +13080,6 @@
                     "spec": {
                         "$ref": "#/components/schemas/catalog.v1.QuotaSpec"
                     },
-                    "references": {
-                        "$ref": "#/components/schemas/catalog.v1.QuotaReferences"
-                    },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1.QuotaStatus"
                     }
@@ -13168,22 +13143,6 @@
                     "resources"
                 ],
                 "additionalProperties": false
-            },
-            "catalog.v1.QuotaReferences": {
-                "type": "object",
-                "properties": {
-                    "product": {
-                        "type": "object",
-                        "properties": {
-                            "release": {
-                                "type": "string",
-                                "description": "The latest active Product Release that corresponds to the Product referenced in the Plan.",
-                                "x-amplify-kind-ref": "ProductRelease",
-                                "x-amplify-kind-ref-type": "hard"
-                            }
-                        }
-                    }
-                }
             },
             "catalog.v1.QuotaStatus": {
                 "type": "object",
@@ -13303,7 +13262,7 @@
                     },
                     "name": {
                         "type": "string",
-                        "x-amplify-kind-ref": "AssetRelease/AssetResource",
+                        "x-amplify-kind-ref": "Asset/AssetResource",
                         "x-amplify-kind-ref-type": "soft"
                     }
                 },
@@ -13428,7 +13387,6 @@
                 "x-axway-plural": "quotas",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
-                    "references",
                     "status"
                 ],
                 "x-axway-scopes": [
@@ -13443,25 +13401,13 @@
                         {
                             "group": "catalog",
                             "kind": "AssetResource",
-                            "scopeKind": "AssetRelease",
+                            "scopeKind": "Asset",
                             "plural": "assetresources",
                             "versions": [
                                 "v1alpha1"
                             ],
                             "types": [
                                 "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "ProductRelease",
-                            "plural": "productreleases",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
                             ]
                         },
                         {
@@ -13575,9 +13521,6 @@
                     "spec": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.QuotaSpec"
                     },
-                    "references": {
-                        "$ref": "#/components/schemas/catalog.v1alpha1.QuotaReferences"
-                    },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.QuotaStatus"
                     }
@@ -13641,22 +13584,6 @@
                     "resources"
                 ],
                 "additionalProperties": false
-            },
-            "catalog.v1alpha1.QuotaReferences": {
-                "type": "object",
-                "properties": {
-                    "product": {
-                        "type": "object",
-                        "properties": {
-                            "release": {
-                                "type": "string",
-                                "description": "The latest active Product Release that corresponds to the Product referenced in the Plan.",
-                                "x-amplify-kind-ref": "ProductRelease",
-                                "x-amplify-kind-ref-type": "hard"
-                            }
-                        }
-                    }
-                }
             },
             "catalog.v1alpha1.QuotaStatus": {
                 "type": "object",
@@ -13776,7 +13703,7 @@
                     },
                     "name": {
                         "type": "string",
-                        "x-amplify-kind-ref": "AssetRelease/AssetResource",
+                        "x-amplify-kind-ref": "Asset/AssetResource",
                         "x-amplify-kind-ref-type": "soft"
                     }
                 },
@@ -16465,19 +16392,6 @@
                 ],
                 "x-axway-references": {
                     "fromResources": [
-                        {
-                            "group": "catalog",
-                            "kind": "Quota",
-                            "scopeKind": "ProductPlan",
-                            "plural": "quotas",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "SOFT"
-                            ]
-                        },
                         {
                             "group": "catalog",
                             "kind": "AssetRequest",
@@ -21959,249 +21873,6 @@
                 },
                 "additionalProperties": false
             },
-            "catalog.v1alpha1.AccessControlList": {
-                "description": "Definition of AccessControlList for version v1alpha1 in group catalog. \n\n Resource that grants access to resource(s) to the specified subject(s)",
-                "type": "object",
-                "x-axway-group": "catalog",
-                "x-axway-version": "v1alpha1",
-                "x-axway-kind": "AccessControlList",
-                "x-axway-plural": "accesscontrollists",
-                "x-axway-scoped": true,
-                "x-axway-scopes": [
-                    {
-                        "kind": "Product",
-                        "plural": "products"
-                    },
-                    {
-                        "kind": "AuthorizationProfile",
-                        "plural": "authprofiles"
-                    },
-                    {
-                        "kind": "Application",
-                        "plural": "applications"
-                    },
-                    {
-                        "kind": "ProductPlanUnit",
-                        "plural": "productplanunits"
-                    },
-                    {
-                        "kind": "Marketplace",
-                        "plural": "marketplaces"
-                    },
-                    {
-                        "kind": "Category",
-                        "plural": "categories"
-                    },
-                    {
-                        "kind": "ProductRelease",
-                        "plural": "productreleases"
-                    },
-                    {
-                        "kind": "Subscription",
-                        "plural": "subscriptions"
-                    },
-                    {
-                        "kind": "Stage",
-                        "plural": "stages"
-                    },
-                    {
-                        "kind": "AssetRelease",
-                        "plural": "assetreleases"
-                    },
-                    {
-                        "kind": "Asset",
-                        "plural": "assets"
-                    },
-                    {
-                        "kind": "ProductPlan",
-                        "plural": "productplans"
-                    }
-                ],
-                "x-axway-references": {
-                    "fromResources": [],
-                    "toResources": []
-                },
-                "properties": {
-                    "group": {
-                        "type": "string",
-                        "maxLength": 80,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "readOnly": false,
-                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "catalog"
-                        ]
-                    },
-                    "apiVersion": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "readOnly": false,
-                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "v1alpha1"
-                        ]
-                    },
-                    "kind": {
-                        "type": "string",
-                        "maxLength": 30,
-                        "readOnly": false,
-                        "description": "Resource of kind AccessControlList. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "AccessControlList"
-                        ]
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "description": "Name of the AccessControlList. AccessControlList name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
-                    },
-                    "title": {
-                        "type": "string",
-                        "maxLength": 350,
-                        "description": "The friendly name of the AccessControlList."
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "description": "Metadata that all server resources have. Data is generated by the server.",
-                        "properties": {
-                            "scope": {
-                                "type": "object",
-                                "description": "The scope where this resource was defined.",
-                                "properties": {
-                                    "kind": {
-                                        "type": "string",
-                                        "maxLength": 30,
-                                        "description": "The kind of the scope resource where the resource is defined.",
-                                        "enum": [
-                                            "Product",
-                                            "AuthorizationProfile",
-                                            "Application",
-                                            "ProductPlanUnit",
-                                            "Marketplace",
-                                            "Category",
-                                            "ProductRelease",
-                                            "Subscription",
-                                            "Stage",
-                                            "AssetRelease",
-                                            "Asset",
-                                            "ProductPlan"
-                                        ]
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "maxLength": 100,
-                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                                        "description": "The name of the scope where the resource is defined."
-                                    }
-                                },
-                                "required": [
-                                    "kind",
-                                    "name"
-                                ]
-                            }
-                        },
-                        "required": [
-                            "scope"
-                        ]
-                    },
-                    "owner": {
-                        "$ref": "#/components/schemas/api.v1.Owner"
-                    },
-                    "finalizers": {
-                        "type": "array",
-                        "description": "List of finalizers",
-                        "items": {
-                            "$ref": "#/components/schemas/api.v1.Finalizer"
-                        }
-                    },
-                    "attributes": {
-                        "$ref": "#/components/schemas/api.v1.Attributes"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "description": "List of tags.",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 80
-                        }
-                    },
-                    "spec": {
-                        "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec"
-                    }
-                },
-                "required": [
-                    "spec",
-                    "kind",
-                    "apiVersion",
-                    "group",
-                    "metadata"
-                ]
-            },
-            "catalog.v1alpha1.AccessControlListSpec": {
-                "type": "object",
-                "properties": {
-                    "rules": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "access": {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
-                                            }
-                                        ],
-                                        "discriminator": {
-                                            "propertyName": "level",
-                                            "mapping": {
-                                                "scope": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "subjects": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "description": "Type of the subject",
-                                    "enum": [
-                                        "team"
-                                    ]
-                                },
-                                "id": {
-                                    "type": "string",
-                                    "description": "ID of the subject"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "catalog.v1alpha1.AccessControlListSpec.AccessLevelScope": {
-                "type": "object",
-                "properties": {
-                    "level": {
-                        "type": "string",
-                        "description": "Resource level at which access is being granted.",
-                        "enum": [
-                            "scope"
-                        ],
-                        "x-axway-code-gen-java": {
-                            "fieldType": "String"
-                        }
-                    }
-                }
-            },
             "management.v1alpha1.AccessControlList": {
                 "description": "Definition of AccessControlList for version v1alpha1 in group management. \n\n Resource that grants access to resource(s) to the specified subject(s)",
                 "type": "object",
@@ -22211,10 +21882,6 @@
                 "x-axway-plural": "accesscontrollists",
                 "x-axway-scoped": true,
                 "x-axway-scopes": [
-                    {
-                        "kind": "K8SCluster",
-                        "plural": "k8sclusters"
-                    },
                     {
                         "kind": "VirtualAPIRelease",
                         "plural": "virtualapireleases"
@@ -22228,16 +21895,20 @@
                         "plural": "meshes"
                     },
                     {
-                        "kind": "WatchTopic",
-                        "plural": "watchtopics"
+                        "kind": "VirtualAPI",
+                        "plural": "virtualapis"
                     },
                     {
                         "kind": "Integration",
                         "plural": "integrations"
                     },
                     {
-                        "kind": "VirtualAPI",
-                        "plural": "virtualapis"
+                        "kind": "WatchTopic",
+                        "plural": "watchtopics"
+                    },
+                    {
+                        "kind": "K8SCluster",
+                        "plural": "k8sclusters"
                     }
                 ],
                 "x-axway-references": {
@@ -22297,13 +21968,13 @@
                                         "maxLength": 30,
                                         "description": "The kind of the scope resource where the resource is defined.",
                                         "enum": [
-                                            "K8SCluster",
                                             "VirtualAPIRelease",
                                             "Environment",
                                             "Mesh",
-                                            "WatchTopic",
+                                            "VirtualAPI",
                                             "Integration",
-                                            "VirtualAPI"
+                                            "WatchTopic",
+                                            "K8SCluster"
                                         ]
                                     },
                                     "name": {
@@ -22406,6 +22077,249 @@
                 }
             },
             "management.v1alpha1.AccessControlListSpec.AccessLevelScope": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "description": "Resource level at which access is being granted.",
+                        "enum": [
+                            "scope"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    }
+                }
+            },
+            "catalog.v1alpha1.AccessControlList": {
+                "description": "Definition of AccessControlList for version v1alpha1 in group catalog. \n\n Resource that grants access to resource(s) to the specified subject(s)",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "AccessControlList",
+                "x-axway-plural": "accesscontrollists",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "AssetRelease",
+                        "plural": "assetreleases"
+                    },
+                    {
+                        "kind": "Category",
+                        "plural": "categories"
+                    },
+                    {
+                        "kind": "ProductPlanUnit",
+                        "plural": "productplanunits"
+                    },
+                    {
+                        "kind": "ProductPlan",
+                        "plural": "productplans"
+                    },
+                    {
+                        "kind": "Product",
+                        "plural": "products"
+                    },
+                    {
+                        "kind": "Asset",
+                        "plural": "assets"
+                    },
+                    {
+                        "kind": "Marketplace",
+                        "plural": "marketplaces"
+                    },
+                    {
+                        "kind": "AuthorizationProfile",
+                        "plural": "authprofiles"
+                    },
+                    {
+                        "kind": "Application",
+                        "plural": "applications"
+                    },
+                    {
+                        "kind": "Subscription",
+                        "plural": "subscriptions"
+                    },
+                    {
+                        "kind": "Stage",
+                        "plural": "stages"
+                    },
+                    {
+                        "kind": "ProductRelease",
+                        "plural": "productreleases"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [],
+                    "toResources": []
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind AccessControlList. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "AccessControlList"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the AccessControlList. AccessControlList name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the AccessControlList."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "AssetRelease",
+                                            "Category",
+                                            "ProductPlanUnit",
+                                            "ProductPlan",
+                                            "Product",
+                                            "Asset",
+                                            "Marketplace",
+                                            "AuthorizationProfile",
+                                            "Application",
+                                            "Subscription",
+                                            "Stage",
+                                            "ProductRelease"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "catalog.v1alpha1.AccessControlListSpec": {
+                "type": "object",
+                "properties": {
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "access": {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
+                                            }
+                                        ],
+                                        "discriminator": {
+                                            "propertyName": "level",
+                                            "mapping": {
+                                                "scope": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "subjects": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "description": "Type of the subject",
+                                    "enum": [
+                                        "team"
+                                    ]
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "ID of the subject"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "catalog.v1alpha1.AccessControlListSpec.AccessLevelScope": {
                 "type": "object",
                 "properties": {
                     "level": {
