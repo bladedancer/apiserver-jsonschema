@@ -331,12 +331,12 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.Secret"
         },
         {
-            "title": "AccessControlList (Product | AuthorizationProfile | Application | ProductPlanUnit | Marketplace | Category | ProductRelease | Subscription | Stage | AssetRelease | Asset | ProductPlan)",
-            "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
+            "title": "AccessControlList (VirtualAPIRelease | Environment | Mesh | VirtualAPI | Integration | WatchTopic | K8SCluster)",
+            "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
         },
         {
-            "title": "AccessControlList (K8SCluster | VirtualAPIRelease | Environment | Mesh | WatchTopic | Integration | VirtualAPI)",
-            "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
+            "title": "AccessControlList (AssetRelease | Category | ProductPlanUnit | ProductPlan | Product | Asset | Marketplace | AuthorizationProfile | Application | Subscription | Stage | ProductRelease)",
+            "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
         },
         {
             "title": "AccessControlList (ResourceGroup)",
@@ -410,6 +410,11 @@
                                 "maxLength": 100,
                                 "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
                                 "description": "The name of the scope where the resource is defined."
+                            },
+                            "title": {
+                                "type": "string",
+                                "maxLength": 350,
+                                "description": "The title of the scope where the resource is defined."
                             },
                             "selfLink": {
                                 "type": "string",
@@ -4180,7 +4185,8 @@
                 "x-axway-plural": "apiservices",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
-                    "status"
+                    "status",
+                    "details"
                 ],
                 "x-axway-scopes": [
                     {
@@ -4391,6 +4397,9 @@
                     },
                     "status": {
                         "$ref": "#/components/schemas/management.v1alpha1.APIServiceStatus"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/management.v1alpha1.APIServiceDetails"
                     }
                 },
                 "required": [
@@ -4505,6 +4514,16 @@
                     "timestamp"
                 ],
                 "additionalProperties": true
+            },
+            "management.v1alpha1.APIServiceDetails": {
+                "type": "object",
+                "properties": {
+                    "specType": {
+                        "type": "string",
+                        "description": "Specification type for the API Service.",
+                        "x-amplify-index": {}
+                    }
+                }
             },
             "management.v1alpha1.APIServiceRevision": {
                 "description": "Definition of APIServiceRevision for version v1alpha1 in group management. \n\n Resource representing an Amplify Central API Service Revision",
@@ -9715,7 +9734,8 @@
                 "x-axway-scoped": false,
                 "x-axway-subresources": [
                     "icon",
-                    "state"
+                    "state",
+                    "status"
                 ],
                 "x-axway-references": {
                     "fromResources": [
@@ -9822,6 +9842,9 @@
                     },
                     "state": {
                         "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIState"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus"
                     }
                 },
                 "required": [
@@ -9863,6 +9886,147 @@
                     "active",
                     "archived"
                 ]
+            },
+            "management.v1alpha1.VirtualAPIStatus": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The current status level, indicating progress towards consistency.",
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "Success",
+                            "Pending",
+                            "Error"
+                        ]
+                    },
+                    "reasons": {
+                        "description": "Reasons for the generated status.",
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Error"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Success"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Pending"
+                                }
+                            ],
+                            "discriminator": {
+                                "propertyName": "type",
+                                "mapping": {
+                                    "Error": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Error",
+                                    "Success": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Success",
+                                    "Pending": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Pending"
+                                }
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "level"
+                ]
+            },
+            "management.v1alpha1.VirtualAPIStatus.Pending": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Pending"
+                        ]
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the change occured."
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "message of the pending status"
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ]
+            },
+            "management.v1alpha1.VirtualAPIStatus.Success": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Success"
+                        ]
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the change occured."
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "message of the result"
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ]
+            },
+            "management.v1alpha1.VirtualAPIStatus.Error": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Error"
+                        ]
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Details of the error."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the update occurred."
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ],
+                "additionalProperties": true
             },
             "management.v1alpha1.VirtualAPISpec.Oas": {
                 "description": "The OAS specification.",
@@ -11168,20 +11332,6 @@
                             "types": [
                                 "SOFT"
                             ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "Quota",
-                            "scopeKind": "ProductPlan",
-                            "plural": "quotas",
-                            "subResourceName": "references",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
-                            ]
                         }
                     ],
                     "toResources": [
@@ -11598,20 +11748,6 @@
                             ],
                             "types": [
                                 "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "Quota",
-                            "scopeKind": "ProductPlan",
-                            "plural": "quotas",
-                            "subResourceName": "references",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
                             ]
                         }
                     ],
@@ -12118,7 +12254,8 @@
                 "x-axway-scoped": false,
                 "x-axway-subresources": [
                     "state",
-                    "references"
+                    "references",
+                    "status"
                 ],
                 "x-axway-references": {
                     "fromResources": [
@@ -12237,6 +12374,9 @@
                     },
                     "references": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanReferences"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanStatus"
                     }
                 },
                 "required": [
@@ -12316,7 +12456,8 @@
                             "approval": {
                                 "type": "string",
                                 "enum": [
-                                    "automatic"
+                                    "automatic",
+                                    "manual"
                                 ]
                             }
                         },
@@ -12355,6 +12496,61 @@
                     }
                 }
             },
+            "catalog.v1alpha1.ProductPlanStatus": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The current status level, indicating progress towards consistency.",
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "Success",
+                            "Pending",
+                            "Error"
+                        ]
+                    },
+                    "reasons": {
+                        "description": "Reasons for the generated status.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Error",
+                                        "Success",
+                                        "Pending"
+                                    ]
+                                },
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Details of the error."
+                                },
+                                "timestamp": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Time when the update occurred."
+                                },
+                                "meta": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "detail",
+                                "timestamp"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "level"
+                ]
+            },
             "catalog.v1.Quota": {
                 "description": "Definition of Quota for version v1 in group catalog. \n\n Resource representing an Amplify Central Plan Quota.",
                 "type": "object",
@@ -12364,7 +12560,6 @@
                 "x-axway-plural": "quotas",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
-                    "references",
                     "status"
                 ],
                 "x-axway-scopes": [
@@ -12379,25 +12574,13 @@
                         {
                             "group": "catalog",
                             "kind": "AssetResource",
-                            "scopeKind": "AssetRelease",
+                            "scopeKind": "Asset",
                             "plural": "assetresources",
                             "versions": [
                                 "v1alpha1"
                             ],
                             "types": [
                                 "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "ProductRelease",
-                            "plural": "productreleases",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
                             ]
                         },
                         {
@@ -12484,9 +12667,6 @@
                     "spec": {
                         "$ref": "#/components/schemas/catalog.v1.QuotaSpec"
                     },
-                    "references": {
-                        "$ref": "#/components/schemas/catalog.v1.QuotaReferences"
-                    },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1.QuotaStatus"
                     }
@@ -12551,22 +12731,6 @@
                 ],
                 "additionalProperties": false
             },
-            "catalog.v1.QuotaReferences": {
-                "type": "object",
-                "properties": {
-                    "product": {
-                        "type": "object",
-                        "properties": {
-                            "release": {
-                                "type": "string",
-                                "description": "The latest active Product Release that corresponds to the Product referenced in the Plan.",
-                                "x-amplify-kind-ref": "ProductRelease",
-                                "x-amplify-kind-ref-type": "hard"
-                            }
-                        }
-                    }
-                }
-            },
             "catalog.v1.QuotaStatus": {
                 "type": "object",
                 "properties": {
@@ -12576,7 +12740,8 @@
                         "x-amplify-index": {},
                         "enum": [
                             "Success",
-                            "Error"
+                            "Error",
+                            "Pending"
                         ]
                     },
                     "reasons": {
@@ -12589,13 +12754,17 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/catalog.v1.QuotaStatus.Success"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/catalog.v1.QuotaStatus.Pending"
                                 }
                             ],
                             "discriminator": {
                                 "propertyName": "type",
                                 "mapping": {
                                     "Error": "#/components/schemas/catalog.v1.QuotaStatus.Error",
-                                    "Success": "#/components/schemas/catalog.v1.QuotaStatus.Success"
+                                    "Success": "#/components/schemas/catalog.v1.QuotaStatus.Success",
+                                    "Pending": "#/components/schemas/catalog.v1.QuotaStatus.Pending"
                                 }
                             }
                         }
@@ -12671,6 +12840,39 @@
                 ],
                 "additionalProperties": true
             },
+            "catalog.v1.QuotaStatus.Pending": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Pending"
+                        ]
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Details of the Pending status."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the resource moved to Pending."
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ],
+                "additionalProperties": true
+            },
             "catalog.v1.QuotaSpec.AssetResourceRef": {
                 "type": "object",
                 "properties": {
@@ -12685,7 +12887,7 @@
                     },
                     "name": {
                         "type": "string",
-                        "x-amplify-kind-ref": "AssetRelease/AssetResource",
+                        "x-amplify-kind-ref": "Asset/AssetResource",
                         "x-amplify-kind-ref-type": "soft"
                     }
                 },
@@ -12810,7 +13012,6 @@
                 "x-axway-plural": "quotas",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
-                    "references",
                     "status"
                 ],
                 "x-axway-scopes": [
@@ -12825,25 +13026,13 @@
                         {
                             "group": "catalog",
                             "kind": "AssetResource",
-                            "scopeKind": "AssetRelease",
+                            "scopeKind": "Asset",
                             "plural": "assetresources",
                             "versions": [
                                 "v1alpha1"
                             ],
                             "types": [
                                 "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
-                            "kind": "ProductRelease",
-                            "plural": "productreleases",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "HARD"
                             ]
                         },
                         {
@@ -12930,9 +13119,6 @@
                     "spec": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.QuotaSpec"
                     },
-                    "references": {
-                        "$ref": "#/components/schemas/catalog.v1alpha1.QuotaReferences"
-                    },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.QuotaStatus"
                     }
@@ -12997,22 +13183,6 @@
                 ],
                 "additionalProperties": false
             },
-            "catalog.v1alpha1.QuotaReferences": {
-                "type": "object",
-                "properties": {
-                    "product": {
-                        "type": "object",
-                        "properties": {
-                            "release": {
-                                "type": "string",
-                                "description": "The latest active Product Release that corresponds to the Product referenced in the Plan.",
-                                "x-amplify-kind-ref": "ProductRelease",
-                                "x-amplify-kind-ref-type": "hard"
-                            }
-                        }
-                    }
-                }
-            },
             "catalog.v1alpha1.QuotaStatus": {
                 "type": "object",
                 "properties": {
@@ -13022,7 +13192,8 @@
                         "x-amplify-index": {},
                         "enum": [
                             "Success",
-                            "Error"
+                            "Error",
+                            "Pending"
                         ]
                     },
                     "reasons": {
@@ -13035,13 +13206,17 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Success"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Pending"
                                 }
                             ],
                             "discriminator": {
                                 "propertyName": "type",
                                 "mapping": {
                                     "Error": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Error",
-                                    "Success": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Success"
+                                    "Success": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Success",
+                                    "Pending": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Pending"
                                 }
                             }
                         }
@@ -13117,6 +13292,39 @@
                 ],
                 "additionalProperties": true
             },
+            "catalog.v1alpha1.QuotaStatus.Pending": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Pending"
+                        ]
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Details of the Pending status."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the resource moved to Pending."
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ],
+                "additionalProperties": true
+            },
             "catalog.v1alpha1.QuotaSpec.AssetResourceRef": {
                 "type": "object",
                 "properties": {
@@ -13131,7 +13339,7 @@
                     },
                     "name": {
                         "type": "string",
-                        "x-amplify-kind-ref": "AssetRelease/AssetResource",
+                        "x-amplify-kind-ref": "Asset/AssetResource",
                         "x-amplify-kind-ref-type": "soft"
                     }
                 },
@@ -14137,18 +14345,6 @@
                     "fromResources": [
                         {
                             "group": "management",
-                            "kind": "VirtualService",
-                            "scopeKind": "VirtualAPIRelease",
-                            "plural": "virtualservices",
-                            "versions": [
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "management",
                             "kind": "AmplifyOAuth2AuthRule",
                             "scopeKind": "VirtualAPIRelease",
                             "plural": "amplifyoauth2authrules",
@@ -14157,6 +14353,18 @@
                             ],
                             "types": [
                                 "HARD"
+                            ]
+                        },
+                        {
+                            "group": "management",
+                            "kind": "VirtualService",
+                            "scopeKind": "VirtualAPIRelease",
+                            "plural": "virtualservices",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
                             ]
                         }
                     ],
@@ -15581,19 +15789,6 @@
                     "fromResources": [
                         {
                             "group": "catalog",
-                            "kind": "Quota",
-                            "scopeKind": "ProductPlan",
-                            "plural": "quotas",
-                            "versions": [
-                                "v1",
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "SOFT"
-                            ]
-                        },
-                        {
-                            "group": "catalog",
                             "kind": "AssetRequest",
                             "scopeKind": "Application",
                             "plural": "assetrequests",
@@ -16993,7 +17188,7 @@
                         "x-amplify-kind-ref": "APIKeyAuthRule",
                         "x-amplify-kind-ref-type": "soft",
                         "x-amplify-kind-ref-collateral": [
-                            "../kind"
+                            "../"
                         ]
                     }
                 }
@@ -17016,7 +17211,7 @@
                         "x-amplify-kind-ref": "AmplifyJWTAuthRule",
                         "x-amplify-kind-ref-type": "soft",
                         "x-amplify-kind-ref-collateral": [
-                            "../kind"
+                            "../"
                         ]
                     }
                 },
@@ -17043,7 +17238,7 @@
                         "x-amplify-kind-ref": "AmplifyOAuth2AuthRule",
                         "x-amplify-kind-ref-type": "soft",
                         "x-amplify-kind-ref-collateral": [
-                            "../kind"
+                            "../"
                         ]
                     }
                 },
@@ -17084,21 +17279,37 @@
                             "fieldType": "String"
                         }
                     },
-                    "name": {
-                        "description": "The name of the credential eg. external secret containing the api key.",
+                    "secretName": {
+                        "description": "The name of the external secret containing the api key.",
                         "type": "string",
                         "x-amplify-kind-ref": "ExternalSecret",
                         "x-amplify-kind-ref-type": "soft"
                     },
                     "in": {
-                        "description": "The location of the api key eg. header, query or cookie.",
-                        "type": "string"
+                        "type": "object",
+                        "description": "The object containing the api key name and location in the request.",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the api key header."
+                            },
+                            "location": {
+                                "type": "string",
+                                "enum": [
+                                    "header"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "location"
+                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "kind",
-                    "name",
+                    "secretName",
                     "in"
                 ]
             },
@@ -20519,211 +20730,6 @@
                 },
                 "additionalProperties": false
             },
-            "catalog.v1alpha1.AccessControlList": {
-                "description": "Definition of AccessControlList for version v1alpha1 in group catalog. \n\n Resource that grants access to resource(s) to the specified subject(s)",
-                "type": "object",
-                "x-axway-group": "catalog",
-                "x-axway-version": "v1alpha1",
-                "x-axway-kind": "AccessControlList",
-                "x-axway-plural": "accesscontrollists",
-                "x-axway-scoped": true,
-                "x-axway-scopes": [
-                    {
-                        "kind": "Product",
-                        "plural": "products"
-                    },
-                    {
-                        "kind": "AuthorizationProfile",
-                        "plural": "authprofiles"
-                    },
-                    {
-                        "kind": "Application",
-                        "plural": "applications"
-                    },
-                    {
-                        "kind": "ProductPlanUnit",
-                        "plural": "productplanunits"
-                    },
-                    {
-                        "kind": "Marketplace",
-                        "plural": "marketplaces"
-                    },
-                    {
-                        "kind": "Category",
-                        "plural": "categories"
-                    },
-                    {
-                        "kind": "ProductRelease",
-                        "plural": "productreleases"
-                    },
-                    {
-                        "kind": "Subscription",
-                        "plural": "subscriptions"
-                    },
-                    {
-                        "kind": "Stage",
-                        "plural": "stages"
-                    },
-                    {
-                        "kind": "AssetRelease",
-                        "plural": "assetreleases"
-                    },
-                    {
-                        "kind": "Asset",
-                        "plural": "assets"
-                    },
-                    {
-                        "kind": "ProductPlan",
-                        "plural": "productplans"
-                    }
-                ],
-                "x-axway-references": {
-                    "fromResources": [],
-                    "toResources": []
-                },
-                "properties": {
-                    "group": {
-                        "type": "string",
-                        "maxLength": 80,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "readOnly": false,
-                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "default": "catalog",
-                        "enum": [
-                            "catalog"
-                        ]
-                    },
-                    "apiVersion": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "readOnly": false,
-                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "default": "v1alpha1",
-                        "enum": [
-                            "v1alpha1"
-                        ]
-                    },
-                    "kind": {
-                        "type": "string",
-                        "maxLength": 30,
-                        "readOnly": false,
-                        "description": "Resource of kind AccessControlList. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "default": "AccessControlList",
-                        "enum": [
-                            "AccessControlList"
-                        ]
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "description": "Name of the AccessControlList. AccessControlList name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
-                    },
-                    "title": {
-                        "type": "string",
-                        "maxLength": 350,
-                        "description": "The friendly name of the AccessControlList."
-                    },
-                    "metadata": {
-                        "$ref": "#/components/schemas/api.v1.Metadata"
-                    },
-                    "owner": {
-                        "$ref": "#/components/schemas/api.v1.Owner"
-                    },
-                    "finalizers": {
-                        "type": "array",
-                        "description": "List of finalizers",
-                        "items": {
-                            "$ref": "#/components/schemas/api.v1.Finalizer"
-                        }
-                    },
-                    "attributes": {
-                        "$ref": "#/components/schemas/api.v1.Attributes"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "description": "List of tags.",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 80
-                        }
-                    },
-                    "spec": {
-                        "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec"
-                    }
-                },
-                "required": [
-                    "spec",
-                    "kind",
-                    "apiVersion",
-                    "group",
-                    "metadata"
-                ]
-            },
-            "catalog.v1alpha1.AccessControlListSpec": {
-                "type": "object",
-                "properties": {
-                    "rules": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "access": {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
-                                            }
-                                        ],
-                                        "discriminator": {
-                                            "propertyName": "level",
-                                            "mapping": {
-                                                "scope": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "subjects": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "description": "Type of the subject",
-                                    "enum": [
-                                        "team"
-                                    ]
-                                },
-                                "id": {
-                                    "type": "string",
-                                    "description": "ID of the subject"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "catalog.v1alpha1.AccessControlListSpec.AccessLevelScope": {
-                "type": "object",
-                "properties": {
-                    "level": {
-                        "type": "string",
-                        "description": "Resource level at which access is being granted.",
-                        "enum": [
-                            "scope"
-                        ],
-                        "x-axway-code-gen-java": {
-                            "fieldType": "String"
-                        }
-                    }
-                }
-            },
             "management.v1alpha1.AccessControlList": {
                 "description": "Definition of AccessControlList for version v1alpha1 in group management. \n\n Resource that grants access to resource(s) to the specified subject(s)",
                 "type": "object",
@@ -20733,10 +20739,6 @@
                 "x-axway-plural": "accesscontrollists",
                 "x-axway-scoped": true,
                 "x-axway-scopes": [
-                    {
-                        "kind": "K8SCluster",
-                        "plural": "k8sclusters"
-                    },
                     {
                         "kind": "VirtualAPIRelease",
                         "plural": "virtualapireleases"
@@ -20750,16 +20752,20 @@
                         "plural": "meshes"
                     },
                     {
-                        "kind": "WatchTopic",
-                        "plural": "watchtopics"
+                        "kind": "VirtualAPI",
+                        "plural": "virtualapis"
                     },
                     {
                         "kind": "Integration",
                         "plural": "integrations"
                     },
                     {
-                        "kind": "VirtualAPI",
-                        "plural": "virtualapis"
+                        "kind": "WatchTopic",
+                        "plural": "watchtopics"
+                    },
+                    {
+                        "kind": "K8SCluster",
+                        "plural": "k8sclusters"
                     }
                 ],
                 "x-axway-references": {
@@ -20895,6 +20901,211 @@
                 }
             },
             "management.v1alpha1.AccessControlListSpec.AccessLevelScope": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "description": "Resource level at which access is being granted.",
+                        "enum": [
+                            "scope"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    }
+                }
+            },
+            "catalog.v1alpha1.AccessControlList": {
+                "description": "Definition of AccessControlList for version v1alpha1 in group catalog. \n\n Resource that grants access to resource(s) to the specified subject(s)",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "AccessControlList",
+                "x-axway-plural": "accesscontrollists",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "AssetRelease",
+                        "plural": "assetreleases"
+                    },
+                    {
+                        "kind": "Category",
+                        "plural": "categories"
+                    },
+                    {
+                        "kind": "ProductPlanUnit",
+                        "plural": "productplanunits"
+                    },
+                    {
+                        "kind": "ProductPlan",
+                        "plural": "productplans"
+                    },
+                    {
+                        "kind": "Product",
+                        "plural": "products"
+                    },
+                    {
+                        "kind": "Asset",
+                        "plural": "assets"
+                    },
+                    {
+                        "kind": "Marketplace",
+                        "plural": "marketplaces"
+                    },
+                    {
+                        "kind": "AuthorizationProfile",
+                        "plural": "authprofiles"
+                    },
+                    {
+                        "kind": "Application",
+                        "plural": "applications"
+                    },
+                    {
+                        "kind": "Subscription",
+                        "plural": "subscriptions"
+                    },
+                    {
+                        "kind": "Stage",
+                        "plural": "stages"
+                    },
+                    {
+                        "kind": "ProductRelease",
+                        "plural": "productreleases"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [],
+                    "toResources": []
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "default": "catalog",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "default": "v1alpha1",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind AccessControlList. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "default": "AccessControlList",
+                        "enum": [
+                            "AccessControlList"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the AccessControlList. AccessControlList name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the AccessControlList."
+                    },
+                    "metadata": {
+                        "$ref": "#/components/schemas/api.v1.Metadata"
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "catalog.v1alpha1.AccessControlListSpec": {
+                "type": "object",
+                "properties": {
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "access": {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
+                                            }
+                                        ],
+                                        "discriminator": {
+                                            "propertyName": "level",
+                                            "mapping": {
+                                                "scope": "#/components/schemas/catalog.v1alpha1.AccessControlListSpec.AccessLevelScope"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "subjects": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "description": "Type of the subject",
+                                    "enum": [
+                                        "team"
+                                    ]
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "ID of the subject"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "catalog.v1alpha1.AccessControlListSpec.AccessLevelScope": {
                 "type": "object",
                 "properties": {
                     "level": {
