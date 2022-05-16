@@ -10358,7 +10358,8 @@
                 "x-axway-scoped": false,
                 "x-axway-subresources": [
                     "icon",
-                    "state"
+                    "state",
+                    "status"
                 ],
                 "x-axway-references": {
                     "fromResources": [
@@ -10459,6 +10460,9 @@
                     },
                     "state": {
                         "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIState"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus"
                     }
                 },
                 "required": [
@@ -10500,6 +10504,147 @@
                     "active",
                     "archived"
                 ]
+            },
+            "management.v1alpha1.VirtualAPIStatus": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The current status level, indicating progress towards consistency.",
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "Success",
+                            "Pending",
+                            "Error"
+                        ]
+                    },
+                    "reasons": {
+                        "description": "Reasons for the generated status.",
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Error"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Success"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Pending"
+                                }
+                            ],
+                            "discriminator": {
+                                "propertyName": "type",
+                                "mapping": {
+                                    "Error": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Error",
+                                    "Success": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Success",
+                                    "Pending": "#/components/schemas/management.v1alpha1.VirtualAPIStatus.Pending"
+                                }
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "level"
+                ]
+            },
+            "management.v1alpha1.VirtualAPIStatus.Pending": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Pending"
+                        ]
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the change occured."
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "message of the pending status"
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ]
+            },
+            "management.v1alpha1.VirtualAPIStatus.Success": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Success"
+                        ]
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the change occured."
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "message of the result"
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ]
+            },
+            "management.v1alpha1.VirtualAPIStatus.Error": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Error"
+                        ]
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Details of the error."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the update occurred."
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ],
+                "additionalProperties": true
             },
             "management.v1alpha1.VirtualAPISpec.Oas": {
                 "description": "The OAS specification.",
@@ -12706,7 +12851,8 @@
                 "x-axway-scoped": false,
                 "x-axway-subresources": [
                     "state",
-                    "references"
+                    "references",
+                    "status"
                 ],
                 "x-axway-references": {
                     "fromResources": [
@@ -12819,6 +12965,9 @@
                     },
                     "references": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanReferences"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanStatus"
                     }
                 },
                 "required": [
@@ -12898,7 +13047,8 @@
                             "approval": {
                                 "type": "string",
                                 "enum": [
-                                    "automatic"
+                                    "automatic",
+                                    "manual"
                                 ]
                             }
                         },
@@ -12936,6 +13086,61 @@
                         }
                     }
                 }
+            },
+            "catalog.v1alpha1.ProductPlanStatus": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The current status level, indicating progress towards consistency.",
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "Success",
+                            "Pending",
+                            "Error"
+                        ]
+                    },
+                    "reasons": {
+                        "description": "Reasons for the generated status.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Error",
+                                        "Success",
+                                        "Pending"
+                                    ]
+                                },
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Details of the error."
+                                },
+                                "timestamp": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Time when the update occurred."
+                                },
+                                "meta": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "detail",
+                                "timestamp"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "level"
+                ]
             },
             "catalog.v1.Quota": {
                 "description": "Definition of Quota for version v1 in group catalog. \n\n Resource representing an Amplify Central Plan Quota.",
@@ -13153,7 +13358,8 @@
                         "x-amplify-index": {},
                         "enum": [
                             "Success",
-                            "Error"
+                            "Error",
+                            "Pending"
                         ]
                     },
                     "reasons": {
@@ -13166,13 +13372,17 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/catalog.v1.QuotaStatus.Success"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/catalog.v1.QuotaStatus.Pending"
                                 }
                             ],
                             "discriminator": {
                                 "propertyName": "type",
                                 "mapping": {
                                     "Error": "#/components/schemas/catalog.v1.QuotaStatus.Error",
-                                    "Success": "#/components/schemas/catalog.v1.QuotaStatus.Success"
+                                    "Success": "#/components/schemas/catalog.v1.QuotaStatus.Success",
+                                    "Pending": "#/components/schemas/catalog.v1.QuotaStatus.Pending"
                                 }
                             }
                         }
@@ -13235,6 +13445,39 @@
                         "type": "string",
                         "format": "date-time",
                         "description": "Time when the update occurred."
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ],
+                "additionalProperties": true
+            },
+            "catalog.v1.QuotaStatus.Pending": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Pending"
+                        ]
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Details of the Pending status."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the resource moved to Pending."
                     },
                     "meta": {
                         "type": "object",
@@ -13594,7 +13837,8 @@
                         "x-amplify-index": {},
                         "enum": [
                             "Success",
-                            "Error"
+                            "Error",
+                            "Pending"
                         ]
                     },
                     "reasons": {
@@ -13607,13 +13851,17 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Success"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Pending"
                                 }
                             ],
                             "discriminator": {
                                 "propertyName": "type",
                                 "mapping": {
                                     "Error": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Error",
-                                    "Success": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Success"
+                                    "Success": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Success",
+                                    "Pending": "#/components/schemas/catalog.v1alpha1.QuotaStatus.Pending"
                                 }
                             }
                         }
@@ -13676,6 +13924,39 @@
                         "type": "string",
                         "format": "date-time",
                         "description": "Time when the update occurred."
+                    },
+                    "meta": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "required": [
+                    "type",
+                    "detail",
+                    "timestamp"
+                ],
+                "additionalProperties": true
+            },
+            "catalog.v1alpha1.QuotaStatus.Pending": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "Pending"
+                        ]
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Details of the Pending status."
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the resource moved to Pending."
                     },
                     "meta": {
                         "type": "object",
@@ -18023,21 +18304,37 @@
                             "fieldType": "String"
                         }
                     },
-                    "name": {
-                        "description": "The name of the credential eg. external secret containing the api key.",
+                    "secretName": {
+                        "description": "The name of the external secret containing the api key.",
                         "type": "string",
                         "x-amplify-kind-ref": "ExternalSecret",
                         "x-amplify-kind-ref-type": "soft"
                     },
                     "in": {
-                        "description": "The location of the api key eg. header, query or cookie.",
-                        "type": "string"
+                        "type": "object",
+                        "description": "The object containing the api key name and location in the request.",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the api key header."
+                            },
+                            "location": {
+                                "type": "string",
+                                "enum": [
+                                    "header"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "location"
+                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "kind",
-                    "name",
+                    "secretName",
                     "in"
                 ]
             },
