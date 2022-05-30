@@ -8297,6 +8297,19 @@
                     "schema": {
                         "type": "object",
                         "description": "JSON Schema draft \\#7 for defining the AccessRequest properties needed to get access to an APIServiceInstance."
+                    },
+                    "provision": {
+                        "type": "object",
+                        "properties": {
+                            "schema": {
+                                "type": "object",
+                                "description": "JSON Schema draft \\#7 for describing the data to be sent back after access has been provisioned."
+                            }
+                        },
+                        "required": [
+                            "schema"
+                        ],
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -8322,6 +8335,7 @@
                 "x-axway-plural": "accessrequests",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
+                    "data",
                     "status",
                     "references"
                 ],
@@ -8506,6 +8520,9 @@
                     "spec": {
                         "$ref": "#/components/schemas/management.v1alpha1.AccessRequestSpec"
                     },
+                    "data": {
+                        "$ref": "#/components/schemas/management.v1alpha1.AccessRequestData"
+                    },
                     "status": {
                         "$ref": "#/components/schemas/management.v1alpha1.AccessRequestStatus"
                     },
@@ -8547,6 +8564,10 @@
                     "managedApplication"
                 ],
                 "additionalProperties": false
+            },
+            "management.v1alpha1.AccessRequestData": {
+                "type": "object",
+                "description": "Data matching the provisioning schema from the AccessRequestDefinition"
             },
             "management.v1alpha1.AccessRequestStatus": {
                 "type": "object",
@@ -17192,6 +17213,19 @@
                     "schema": {
                         "type": "object",
                         "description": "JSON Schema draft \\#7 for defining the AssetRequest properties needed to get access to an APIServiceInstance."
+                    },
+                    "provision": {
+                        "type": "object",
+                        "properties": {
+                            "schema": {
+                                "type": "object",
+                                "description": "JSON Schema draft \\#7 for describing the data to be sent back after access has been provisioned."
+                            }
+                        },
+                        "required": [
+                            "schema"
+                        ],
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -17241,6 +17275,7 @@
                 "x-axway-plural": "assetrequests",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
+                    "data",
                     "references",
                     "approval",
                     "status"
@@ -17437,6 +17472,9 @@
                     "spec": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestSpec"
                     },
+                    "data": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestData"
+                    },
                     "references": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestReferences"
                     },
@@ -17478,6 +17516,10 @@
                     "assetResource"
                 ],
                 "additionalProperties": false
+            },
+            "catalog.v1alpha1.AssetRequestData": {
+                "type": "object",
+                "description": "Data matching the provisioning schema from the AssetRequestDefinition"
             },
             "catalog.v1alpha1.AssetRequestReferences": {
                 "type": "object",
@@ -18128,7 +18170,7 @@
                 "properties": {
                     "prefix": {
                         "type": "string",
-                        "pattern": "^/",
+                        "pattern": "^(?:/[^/?&#\\s]+)*+/?$",
                         "description": "The path prefix to match. Example /api/v1"
                     },
                     "headerMatch": {
@@ -18346,7 +18388,9 @@
                         "type": "object",
                         "properties": {
                             "prefix": {
-                                "type": "string"
+                                "type": "string",
+                                "pattern": "^(?:/[^/?&#\\s]+)*+/?$",
+                                "description": "The path prefix to match. Example /api/v1"
                             },
                             "protocol": {
                                 "type": "string"
