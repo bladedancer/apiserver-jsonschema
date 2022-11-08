@@ -183,6 +183,14 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.ProductVisibility"
         },
         {
+            "title": "SupportContact",
+            "$ref": "#/components/schemas/catalog.v1.SupportContact"
+        },
+        {
+            "title": "SupportContact",
+            "$ref": "#/components/schemas/catalog.v1alpha1.SupportContact"
+        },
+        {
             "title": "Product",
             "$ref": "#/components/schemas/catalog.v1.Product"
         },
@@ -279,6 +287,10 @@
             "$ref": "#/components/schemas/management.v1alpha1.OAS3Document"
         },
         {
+            "title": "GraphQLDocument (VirtualAPI | VirtualAPIRelease)",
+            "$ref": "#/components/schemas/management.v1alpha1.GraphQLDocument"
+        },
+        {
             "title": "Document (Product | ProductRelease)",
             "$ref": "#/components/schemas/catalog.v1.Document"
         },
@@ -327,19 +339,19 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.CredentialRequestDefinition"
         },
         {
-            "title": "Secret (AuthorizationProfile)",
-            "$ref": "#/components/schemas/catalog.v1alpha1.Secret"
-        },
-        {
             "title": "Secret (Environment | Integration)",
             "$ref": "#/components/schemas/management.v1alpha1.Secret"
         },
         {
-            "title": "AccessControlList (VirtualAPI | VirtualAPIRelease | K8SCluster | Mesh | Integration | Environment | WatchTopic)",
+            "title": "Secret (AuthorizationProfile)",
+            "$ref": "#/components/schemas/catalog.v1alpha1.Secret"
+        },
+        {
+            "title": "AccessControlList (VirtualAPIRelease | Mesh | VirtualAPI | WatchTopic | Environment | K8SCluster | Integration)",
             "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
         },
         {
-            "title": "AccessControlList (Stage | AssetRelease | Category | Product | Application | Subscription | ProductRelease | ProductPlanUnit | Marketplace | AuthorizationProfile | Asset | ProductPlan)",
+            "title": "AccessControlList (Category | Marketplace | Application | ProductRelease | Product | Asset | AuthorizationProfile | ProductPlan | Subscription | AssetRelease | Stage | SupportContact | ProductPlanUnit)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
         },
         {
@@ -2050,6 +2062,24 @@
                             "x-amplify-kind-ref": "Category",
                             "x-amplify-kind-ref-type": "soft"
                         }
+                    },
+                    "autoRelease": {
+                        "type": "object",
+                        "description": "Defines if an asset should create releases everytime there is an update to the resources.",
+                        "properties": {
+                            "releaseType": {
+                                "type": "string",
+                                "enum": [
+                                    "major",
+                                    "minor",
+                                    "patch"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "releaseType"
+                        ],
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -3504,7 +3534,7 @@
                                 "v1alpha1"
                             ],
                             "types": [
-                                "SOFT"
+                                "HARD"
                             ]
                         }
                     ]
@@ -3602,7 +3632,7 @@
                     "environment": {
                         "type": "string",
                         "x-amplify-kind-ref": "management/Environment",
-                        "x-amplify-kind-ref-type": "soft"
+                        "x-amplify-kind-ref-type": "hard"
                     }
                 }
             },
@@ -3878,6 +3908,9 @@
                 "x-axway-subresources": [
                     "references",
                     "data",
+                    "state",
+                    "policies",
+                    "marketplace",
                     "status"
                 ],
                 "x-axway-scopes": [
@@ -3889,6 +3922,18 @@
                 "x-axway-references": {
                     "fromResources": [],
                     "toResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "Marketplace",
+                            "plural": "marketplaces",
+                            "versions": [
+                                "v1",
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        },
                         {
                             "group": "management",
                             "kind": "Credential",
@@ -4019,6 +4064,15 @@
                     "data": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.CredentialData"
                     },
+                    "state": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.CredentialState"
+                    },
+                    "policies": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.CredentialPolicies"
+                    },
+                    "marketplace": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.CredentialMarketplace"
+                    },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.CredentialStatus"
                     }
@@ -4043,6 +4097,33 @@
                     "data": {
                         "type": "object",
                         "description": "data matching the credential request definition schema."
+                    },
+                    "state": {
+                        "type": "object",
+                        "description": "Desired state of the Credential.",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-amplify-index": {},
+                                "enum": [
+                                    "active",
+                                    "inactive"
+                                ]
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "Additional info on the state.",
+                                "maxLength": 350
+                            },
+                            "rotate": {
+                                "type": "boolean",
+                                "description": "Defines if credential needs to be rotated."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name"
+                        ]
                     }
                 },
                 "required": [
@@ -4064,6 +4145,133 @@
             "catalog.v1alpha1.CredentialData": {
                 "type": "object",
                 "description": "data matching the provisioning schema from CredentialRequestDefinition."
+            },
+            "catalog.v1alpha1.CredentialState": {
+                "type": "object",
+                "description": "Current state of the Credential.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "active",
+                            "inactive"
+                        ]
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Additional info on the state.",
+                        "maxLength": 350
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            "catalog.v1alpha1.CredentialPolicies": {
+                "type": "object",
+                "properties": {
+                    "expiry": {
+                        "type": "object",
+                        "properties": {
+                            "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Time when the Credential is set to be expired.",
+                                "x-amplify-index": {}
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "timestamp"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "catalog.v1alpha1.CredentialMarketplace": {
+                "type": "object",
+                "description": "Details about the marketplace Application.",
+                "required": [
+                    "name",
+                    "resource"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the Marketplace.",
+                        "x-amplify-kind-ref": "Marketplace",
+                        "x-amplify-kind-ref-type": "hard"
+                    },
+                    "resource": {
+                        "type": "object",
+                        "description": "The Marketplace Credential resource details.",
+                        "required": [
+                            "metadata"
+                        ],
+                        "properties": {
+                            "metadata": {
+                                "type": "object",
+                                "description": "Marketplace Application metadata.",
+                                "properties": {
+                                    "createUserId": {
+                                        "type": "string",
+                                        "description": "Id of the user that created the entity.",
+                                        "minLength": 1,
+                                        "maxLength": 52
+                                    },
+                                    "modifyUserId": {
+                                        "type": "string",
+                                        "description": "Id of the user that created the entity.",
+                                        "minLength": 1,
+                                        "maxLength": 52
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "owner": {
+                                "description": "Owner of the Credential.",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "description": "The type of the owner.",
+                                        "enum": [
+                                            "team"
+                                        ]
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Id of the owner of the resource.",
+                                        "maxLength": 36,
+                                        "x-amplify-index": {}
+                                    },
+                                    "organization": {
+                                        "type": "object",
+                                        "description": "Organization details.",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Id of the organization.",
+                                                "x-amplify-index": {}
+                                            }
+                                        },
+                                        "required": [
+                                            "id"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "organization"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false
             },
             "catalog.v1alpha1.CredentialStatus": {
                 "type": "object",
@@ -4514,7 +4722,7 @@
                                 "v1alpha1"
                             ],
                             "types": [
-                                "SOFT"
+                                "HARD"
                             ]
                         },
                         {
@@ -5617,6 +5825,11 @@
                                             "type": "string",
                                             "pattern": "^/",
                                             "description": "The base path to the API. Example: '/api'."
+                                        },
+                                        "details": {
+                                            "type": "object",
+                                            "description": "Specify any additional routing details needed",
+                                            "additionalProperties": true
                                         }
                                     },
                                     "additionalProperties": false
@@ -5918,11 +6131,11 @@
                     },
                     "unstructuredDataProperties": {
                         "type": "object",
-                        "description": "The Catalog Item properties for unstructuded definition subtypes.",
+                        "description": "The Catalog Item properties for unstructured definition subtypes.",
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "description": "Defines the unstrucured data type. Example 'APIBuilderConnector' or 'SDK'."
+                                "description": "Defines the unstructured data type. Example 'APIBuilderConnector' or 'SDK'."
                             },
                             "contentType": {
                                 "type": "string",
@@ -5954,7 +6167,7 @@
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "description": "Defines the unstrucured data type. Example 'APIBuilderConnector' or 'SDK'."
+                                "description": "Defines the unstructured data type. Example 'APIBuilderConnector' or 'SDK'."
                             },
                             "contentType": {
                                 "type": "string",
@@ -9693,7 +9906,7 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
-                        "description": "Time when the change occured."
+                        "description": "Time when the change occurred."
                     },
                     "detail": {
                         "type": "string",
@@ -9725,7 +9938,7 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
-                        "description": "Time when the change occured."
+                        "description": "Time when the change occurred."
                     },
                     "detail": {
                         "type": "string",
@@ -10811,6 +11024,8 @@
                 "x-axway-subresources": [
                     "references",
                     "data",
+                    "state",
+                    "policies",
                     "status"
                 ],
                 "x-axway-scopes": [
@@ -10977,6 +11192,12 @@
                     "data": {
                         "$ref": "#/components/schemas/management.v1alpha1.CredentialData"
                     },
+                    "state": {
+                        "$ref": "#/components/schemas/management.v1alpha1.CredentialState"
+                    },
+                    "policies": {
+                        "$ref": "#/components/schemas/management.v1alpha1.CredentialPolicies"
+                    },
                     "status": {
                         "$ref": "#/components/schemas/management.v1alpha1.CredentialStatus"
                     }
@@ -11005,6 +11226,33 @@
                     "data": {
                         "type": "object",
                         "description": "data matching the credential request definition schema."
+                    },
+                    "state": {
+                        "type": "object",
+                        "description": "Desired state of the Credential.",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "x-amplify-index": {},
+                                "enum": [
+                                    "active",
+                                    "inactive"
+                                ]
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "Additional info on the desired state.",
+                                "maxLength": 350
+                            },
+                            "rotate": {
+                                "type": "boolean",
+                                "description": "Defines if credential needs to be rotated."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name"
+                        ]
                     }
                 },
                 "required": [
@@ -11029,6 +11277,50 @@
             "management.v1alpha1.CredentialData": {
                 "type": "object",
                 "description": "data matching the provisioning schema from CredentialRequestDefinition."
+            },
+            "management.v1alpha1.CredentialState": {
+                "type": "object",
+                "description": "Current state of the Credential.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "active",
+                            "inactive"
+                        ]
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Additional info on the state.",
+                        "maxLength": 350
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            "management.v1alpha1.CredentialPolicies": {
+                "type": "object",
+                "properties": {
+                    "expiry": {
+                        "type": "object",
+                        "properties": {
+                            "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Time when the Credential is set to be expired.",
+                                "x-amplify-index": {}
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "timestamp"
+                        ]
+                    }
+                },
+                "additionalProperties": false
             },
             "management.v1alpha1.CredentialStatus": {
                 "type": "object",
@@ -11220,8 +11512,7 @@
                     "type": {
                         "type": "string",
                         "x-extensible-enum": [
-                            "REST",
-                            "EIPAAS"
+                            "REST"
                         ]
                     },
                     "api": {
@@ -11648,6 +11939,32 @@
                         },
                         {
                             "group": "catalog",
+                            "kind": "AssetRequest",
+                            "scopeKind": "Application",
+                            "plural": "assetrequests",
+                            "subResourceName": "marketplace",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "Credential",
+                            "scopeKind": "Application",
+                            "plural": "credentials",
+                            "subResourceName": "marketplace",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
                             "kind": "Subscription",
                             "plural": "subscriptions",
                             "subResourceName": "marketplace",
@@ -11772,6 +12089,32 @@
                             "group": "catalog",
                             "kind": "Application",
                             "plural": "applications",
+                            "subResourceName": "marketplace",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "AssetRequest",
+                            "scopeKind": "Application",
+                            "plural": "assetrequests",
+                            "subResourceName": "marketplace",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "Credential",
+                            "scopeKind": "Application",
+                            "plural": "credentials",
                             "subResourceName": "marketplace",
                             "versions": [
                                 "v1alpha1"
@@ -12346,6 +12689,244 @@
                 ],
                 "additionalProperties": false
             },
+            "catalog.v1.SupportContact": {
+                "description": "Definition of SupportContact for version v1 in group catalog. \n\n Resource representing a Support Contact information.",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1",
+                "x-axway-kind": "SupportContact",
+                "x-axway-plural": "supportcontacts",
+                "x-axway-scoped": false,
+                "x-axway-references": {
+                    "fromResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "Product",
+                            "plural": "products",
+                            "versions": [
+                                "v1",
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ],
+                    "toResources": []
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind SupportContact. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "SupportContact"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the SupportContact. SupportContact name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the SupportContact."
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1.SupportContactSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group"
+                ]
+            },
+            "catalog.v1.SupportContactSpec": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "x-amplify-encrypted": true,
+                        "description": "Email address of the Support Contact."
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "pattern": "^\\+[1-9]\\d{1,14}$",
+                        "x-amplify-encrypted": true,
+                        "description": "String of the E.164 format of the phone number, e.g. +11234567899"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "email"
+                ]
+            },
+            "catalog.v1alpha1.SupportContact": {
+                "description": "Definition of SupportContact for version v1alpha1 in group catalog. \n\n Resource representing a Support Contact information.",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "SupportContact",
+                "x-axway-plural": "supportcontacts",
+                "x-axway-scoped": false,
+                "x-axway-references": {
+                    "fromResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "Product",
+                            "plural": "products",
+                            "versions": [
+                                "v1",
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ],
+                    "toResources": []
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind SupportContact. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "SupportContact"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the SupportContact. SupportContact name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the SupportContact."
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.SupportContactSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group"
+                ]
+            },
+            "catalog.v1alpha1.SupportContactSpec": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "x-amplify-encrypted": true,
+                        "description": "Email address of the Support Contact."
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "pattern": "^\\+[1-9]\\d{1,14}$",
+                        "x-amplify-encrypted": true,
+                        "description": "String of the E.164 format of the phone number, e.g. +11234567899"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "email"
+                ]
+            },
             "catalog.v1.Product": {
                 "description": "Definition of Product for version v1 in group catalog. \n\n Resource representing an Amplify Central Product in the Products Catalog.",
                 "type": "object",
@@ -12440,6 +13021,18 @@
                             "kind": "Asset",
                             "plural": "assets",
                             "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "SupportContact",
+                            "plural": "supportcontacts",
+                            "versions": [
+                                "v1",
                                 "v1alpha1"
                             ],
                             "types": [
@@ -12597,6 +13190,11 @@
                         "description": "description of the Product.",
                         "maxLength": 350
                     },
+                    "supportContact": {
+                        "type": "string",
+                        "x-amplify-kind-ref": "SupportContact",
+                        "x-amplify-kind-ref-type": "soft"
+                    },
                     "categories": {
                         "type": "array",
                         "items": {
@@ -12637,6 +13235,24 @@
                             },
                             "additionalProperties": false
                         }
+                    },
+                    "autoRelease": {
+                        "type": "object",
+                        "description": "Defines if a product should create releases everytime there is an update to the product references.",
+                        "properties": {
+                            "releaseType": {
+                                "type": "string",
+                                "enum": [
+                                    "major",
+                                    "minor",
+                                    "patch"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "releaseType"
+                        ],
+                        "additionalProperties": false
                     }
                 },
                 "additionalProperties": false
@@ -12881,6 +13497,18 @@
                         },
                         {
                             "group": "catalog",
+                            "kind": "SupportContact",
+                            "plural": "supportcontacts",
+                            "versions": [
+                                "v1",
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
                             "kind": "Asset",
                             "plural": "assets",
                             "versions": [
@@ -13030,6 +13658,11 @@
                         "description": "description of the Product.",
                         "maxLength": 350
                     },
+                    "supportContact": {
+                        "type": "string",
+                        "x-amplify-kind-ref": "SupportContact",
+                        "x-amplify-kind-ref-type": "soft"
+                    },
                     "categories": {
                         "type": "array",
                         "items": {
@@ -13070,6 +13703,24 @@
                             },
                             "additionalProperties": false
                         }
+                    },
+                    "autoRelease": {
+                        "type": "object",
+                        "description": "Defines if a product should create releases everytime there is an update to the product references.",
+                        "properties": {
+                            "releaseType": {
+                                "type": "string",
+                                "enum": [
+                                    "major",
+                                    "minor",
+                                    "patch"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "releaseType"
+                        ],
+                        "additionalProperties": false
                     }
                 },
                 "additionalProperties": false
@@ -14519,7 +15170,7 @@
                             },
                             "price": {
                                 "type": "number",
-                                "format": "float",
+                                "format": "double",
                                 "description": "The base price for the plan.",
                                 "default": 0,
                                 "maximum": 999999999,
@@ -15117,7 +15768,7 @@
                         "properties": {
                             "value": {
                                 "type": "number",
-                                "format": "float",
+                                "format": "double",
                                 "description": "The overage price per unit.",
                                 "maximum": 999999999,
                                 "minimum": 0
@@ -15259,14 +15910,14 @@
                                 },
                                 "cost": {
                                     "type": "number",
-                                    "format": "float",
+                                    "format": "double",
                                     "description": "The tier price.",
                                     "minimum": 0,
                                     "maximum": 999999999
                                 },
                                 "flatFee": {
                                     "type": "number",
-                                    "format": "float",
+                                    "format": "double",
                                     "description": "The flat fee for the tier.",
                                     "minimum": 0,
                                     "maximum": 999999999
@@ -15771,7 +16422,7 @@
                         "properties": {
                             "value": {
                                 "type": "number",
-                                "format": "float",
+                                "format": "double",
                                 "description": "The overage price per unit.",
                                 "maximum": 999999999,
                                 "minimum": 0
@@ -15913,14 +16564,14 @@
                                 },
                                 "cost": {
                                     "type": "number",
-                                    "format": "float",
+                                    "format": "double",
                                     "description": "The tier price.",
                                     "minimum": 0,
                                     "maximum": 999999999
                                 },
                                 "flatFee": {
                                     "type": "number",
-                                    "format": "float",
+                                    "format": "double",
                                     "description": "The flat fee for the tier.",
                                     "minimum": 0,
                                     "maximum": 999999999
@@ -19188,6 +19839,7 @@
                 "x-axway-plural": "assetrequests",
                 "x-axway-scoped": true,
                 "x-axway-subresources": [
+                    "marketplace",
                     "data",
                     "references",
                     "approval",
@@ -19240,6 +19892,18 @@
                         },
                         {
                             "group": "catalog",
+                            "kind": "Marketplace",
+                            "plural": "marketplaces",
+                            "versions": [
+                                "v1",
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
                             "kind": "AssetResource",
                             "scopeKind": "AssetRelease",
                             "plural": "assetresources",
@@ -19248,6 +19912,18 @@
                             ],
                             "types": [
                                 "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "CredentialRequestDefinition",
+                            "scopeKind": "AuthorizationProfile",
+                            "plural": "credentialrequestdefinitions",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
                             ]
                         },
                         {
@@ -19385,6 +20061,9 @@
                     "spec": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestSpec"
                     },
+                    "marketplace": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestMarketplace"
+                    },
                     "data": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.AssetRequestData"
                     },
@@ -19430,6 +20109,89 @@
                 ],
                 "additionalProperties": false
             },
+            "catalog.v1alpha1.AssetRequestMarketplace": {
+                "type": "object",
+                "description": "Details about the marketplace Access Request.",
+                "required": [
+                    "name",
+                    "resource"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the Marketplace.",
+                        "x-amplify-kind-ref": "Marketplace",
+                        "x-amplify-kind-ref-type": "hard"
+                    },
+                    "resource": {
+                        "type": "object",
+                        "description": "The Marketplace Access Request resource details.",
+                        "required": [
+                            "metadata"
+                        ],
+                        "properties": {
+                            "metadata": {
+                                "type": "object",
+                                "description": "Marketplace Access Request metadata.",
+                                "properties": {
+                                    "createUserId": {
+                                        "type": "string",
+                                        "description": "Id of the user that created the entity.",
+                                        "minLength": 1,
+                                        "maxLength": 52
+                                    },
+                                    "modifyUserId": {
+                                        "type": "string",
+                                        "description": "Id of the user that created the entity.",
+                                        "minLength": 1,
+                                        "maxLength": 52
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "owner": {
+                                "description": "Owner of the Access Request.",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "description": "The type of the owner.",
+                                        "enum": [
+                                            "team"
+                                        ]
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Id of the owner of the resource.",
+                                        "maxLength": 36,
+                                        "x-amplify-index": {}
+                                    },
+                                    "organization": {
+                                        "type": "object",
+                                        "description": "Organization details.",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "Id of the organization.",
+                                                "x-amplify-index": {}
+                                            }
+                                        },
+                                        "required": [
+                                            "id"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "organization"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
             "catalog.v1alpha1.AssetRequestData": {
                 "type": "object",
                 "description": "Data matching the provisioning schema from the AssetRequestDefinition"
@@ -19453,6 +20215,15 @@
                         "description": "Reference to Release that got created from this asset request.",
                         "x-amplify-kind-ref": "Asset",
                         "x-amplify-kind-ref-type": "soft"
+                    },
+                    "credentialRequestDefinitions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Supported credentials types that can be used with this asset request.",
+                            "x-amplify-kind-ref": "AuthorizationProfile/CredentialRequestDefinition",
+                            "x-amplify-kind-ref-type": "soft"
+                        }
                     },
                     "accessRequest": {
                         "type": "string",
@@ -19921,6 +20692,18 @@
                             "types": [
                                 "HARD"
                             ]
+                        },
+                        {
+                            "group": "management",
+                            "kind": "GraphQLDocument",
+                            "scopeKind": "VirtualAPIRelease",
+                            "plural": "graphqldocuments",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
                         }
                     ],
                     "toResources": [
@@ -20099,7 +20882,7 @@
                 "properties": {
                     "prefix": {
                         "type": "string",
-                        "pattern": "^(?:/[^/?&#\\s]+)*+/?$",
+                        "pattern": "^(?:\\/[^/?&#\\s]+)*\\/?$",
                         "description": "The path prefix to match. Example /api/v1",
                         "minLength": 1
                     },
@@ -20107,10 +20890,6 @@
                         "type": "string",
                         "x-amplify-kind-ref": "CorsRule",
                         "x-amplify-kind-ref-type": "soft"
-                    },
-                    "forwardAuthCredentials": {
-                        "type": "boolean",
-                        "description": "Parameter not required meaning auth credentials are not forwarded to the backend by default. If set to true, auth credentials are forwarded."
                     },
                     "auth": {
                         "oneOf": [
@@ -20175,6 +20954,10 @@
                         "x-amplify-kind-ref-collateral": [
                             "../"
                         ]
+                    },
+                    "forwardAuthCredentials": {
+                        "type": "boolean",
+                        "description": "Parameter not required meaning auth credentials are not forwarded to the backend by default. If set to true, auth credentials are forwarded."
                     }
                 },
                 "additionalProperties": false,
@@ -20203,6 +20986,10 @@
                         "x-amplify-kind-ref-collateral": [
                             "../"
                         ]
+                    },
+                    "forwardAuthCredentials": {
+                        "type": "boolean",
+                        "description": "Parameter not required meaning auth credentials are not forwarded to the backend by default. If set to true, auth credentials are forwarded."
                     }
                 },
                 "additionalProperties": false,
@@ -20231,6 +21018,10 @@
                         "x-amplify-kind-ref-collateral": [
                             "../"
                         ]
+                    },
+                    "forwardAuthCredentials": {
+                        "type": "boolean",
+                        "description": "Parameter not required meaning auth credentials are not forwarded to the backend by default. If set to true, auth credentials are forwarded."
                     }
                 },
                 "additionalProperties": false,
@@ -20393,7 +21184,7 @@
                         "properties": {
                             "prefix": {
                                 "type": "string",
-                                "pattern": "^(?:/[^/?&#\\s]+)*+/?$",
+                                "pattern": "^(?:\\/[^/?&#\\s]+)*\\/?$",
                                 "description": "The path prefix to match. Example /api/v1",
                                 "minLength": 1
                             },
@@ -20521,10 +21312,6 @@
                                 "type": "string",
                                 "x-amplify-kind-ref": "CorsRule",
                                 "x-amplify-kind-ref-type": "soft"
-                            },
-                            "forwardAuthCredentials": {
-                                "type": "boolean",
-                                "description": "Parameter not required meaning auth credentials are not forwarded to the backend by default. If set to true, auth credentials are forwarded. Only applicable if an auth override rule is applied."
                             },
                             "auth": {
                                 "oneOf": [
@@ -20719,6 +21506,166 @@
                 "required": [
                     "virtualService",
                     "oas"
+                ],
+                "additionalProperties": false
+            },
+            "management.v1alpha1.GraphQLDocument": {
+                "description": "Definition of GraphQLDocument for version v1alpha1 in group management. \n\n Resource representing the GraphQL definition for the VirtualService.",
+                "type": "object",
+                "x-axway-group": "management",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "GraphQLDocument",
+                "x-axway-plural": "graphqldocuments",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "VirtualAPI",
+                        "plural": "virtualapis"
+                    },
+                    {
+                        "kind": "VirtualAPIRelease",
+                        "plural": "virtualapireleases"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [],
+                    "toResources": [
+                        {
+                            "group": "management",
+                            "kind": "VirtualService",
+                            "scopeKind": "VirtualAPIRelease",
+                            "plural": "virtualservices",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        }
+                    ]
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the management group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "management"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind GraphQLDocument. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "GraphQLDocument"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the GraphQLDocument. GraphQLDocument name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the GraphQLDocument."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "VirtualAPI",
+                                            "VirtualAPIRelease"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/management.v1alpha1.GraphQLDocumentSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "management.v1alpha1.GraphQLDocumentSpec": {
+                "type": "object",
+                "properties": {
+                    "virtualService": {
+                        "type": "string",
+                        "x-amplify-kind-ref": "VirtualService"
+                    },
+                    "graphql": {
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "virtualService",
+                    "graphql"
                 ],
                 "additionalProperties": false
             },
@@ -22933,7 +23880,7 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
-                        "description": "Time when the change occured."
+                        "description": "Time when the change occurred."
                     },
                     "detail": {
                         "type": "string",
@@ -22965,7 +23912,7 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
-                        "description": "Time when the change occured."
+                        "description": "Time when the change occurred."
                     },
                     "detail": {
                         "type": "string",
@@ -23283,7 +24230,7 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
-                        "description": "Time when the change occured."
+                        "description": "Time when the change occurred."
                     },
                     "detail": {
                         "type": "string",
@@ -23315,7 +24262,7 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
-                        "description": "Time when the change occured."
+                        "description": "Time when the change occurred."
                     },
                     "detail": {
                         "type": "string",
@@ -23597,6 +24544,52 @@
                             "schema": {
                                 "type": "object",
                                 "description": "JSON Schema draft \\#7 for describing the generated credentials format."
+                            },
+                            "policies": {
+                                "description": "Defines the policies applied on the Credentials generated using this definition.",
+                                "type": "object",
+                                "properties": {
+                                    "renewable": {
+                                        "type": "boolean",
+                                        "description": "Defines on if Credentials using this definitions can be renewed."
+                                    },
+                                    "suspendable": {
+                                        "type": "boolean",
+                                        "description": "Defines on if Credentials can be suspended."
+                                    },
+                                    "expiry": {
+                                        "type": "object",
+                                        "description": "Expiry properties for Credentials linked to this definition.",
+                                        "properties": {
+                                            "period": {
+                                                "type": "integer",
+                                                "format": "int32",
+                                                "minimum": 1,
+                                                "description": "The number of days after the Credentials are considered to be expired."
+                                            },
+                                            "actions": {
+                                                "type": "array",
+                                                "description": "The actions taken when the Credentials expire.",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "description": "The type of the action taken when the Credential using this definition expires.",
+                                                            "enum": [
+                                                                "suspend"
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "period"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
                             }
                         },
                         "required": [
@@ -23667,6 +24660,19 @@
                             "kind": "Credential",
                             "scopeKind": "Application",
                             "plural": "credentials",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "AssetRequest",
+                            "scopeKind": "Application",
+                            "plural": "assetrequests",
+                            "subResourceName": "references",
                             "versions": [
                                 "v1alpha1"
                             ],
@@ -23840,6 +24846,52 @@
                             "schema": {
                                 "type": "object",
                                 "description": "JSON Schema draft \\#7 for describing the generated credentials format."
+                            },
+                            "policies": {
+                                "description": "Defines the policies applied on the Credentials generated using this definition.",
+                                "type": "object",
+                                "properties": {
+                                    "renewable": {
+                                        "type": "boolean",
+                                        "description": "Defines on if Credentials using this definitions can be renewed."
+                                    },
+                                    "suspendable": {
+                                        "type": "boolean",
+                                        "description": "Defines on if Credentials can be suspended."
+                                    },
+                                    "expiry": {
+                                        "type": "object",
+                                        "description": "Expiry properties for Credentials linked to this definition.",
+                                        "properties": {
+                                            "period": {
+                                                "type": "integer",
+                                                "format": "int32",
+                                                "minimum": 1,
+                                                "description": "The number of days after the Credentials are considered to be expired."
+                                            },
+                                            "actions": {
+                                                "type": "array",
+                                                "description": "The actions taken when the Credentials expire.",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "description": "The type of the action taken when the Credential using this definition expires.",
+                                                            "enum": [
+                                                                "suspend"
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "period"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
                             }
                         },
                         "required": [
@@ -23872,158 +24924,6 @@
                     "x-amplify-kind-ref": "Webhook",
                     "x-amplify-kind-ref-type": "soft"
                 }
-            },
-            "catalog.v1alpha1.Secret": {
-                "description": "Definition of Secret for version v1alpha1 in group catalog. \n\n Secrets definitions.",
-                "type": "object",
-                "x-axway-group": "catalog",
-                "x-axway-version": "v1alpha1",
-                "x-axway-kind": "Secret",
-                "x-axway-plural": "secrets",
-                "x-axway-scoped": true,
-                "x-axway-scopes": [
-                    {
-                        "kind": "AuthorizationProfile",
-                        "plural": "authprofiles"
-                    }
-                ],
-                "x-axway-references": {
-                    "fromResources": [
-                        {
-                            "group": "catalog",
-                            "kind": "Webhook",
-                            "scopeKind": "AuthorizationProfile",
-                            "plural": "webhooks",
-                            "versions": [
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "SOFT"
-                            ]
-                        }
-                    ],
-                    "toResources": []
-                },
-                "properties": {
-                    "group": {
-                        "type": "string",
-                        "maxLength": 80,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "readOnly": false,
-                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "catalog"
-                        ]
-                    },
-                    "apiVersion": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "readOnly": false,
-                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "v1alpha1"
-                        ]
-                    },
-                    "kind": {
-                        "type": "string",
-                        "maxLength": 30,
-                        "readOnly": false,
-                        "description": "Resource of kind Secret. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "Secret"
-                        ]
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "description": "Name of the Secret. Secret name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
-                    },
-                    "title": {
-                        "type": "string",
-                        "maxLength": 350,
-                        "description": "The friendly name of the Secret."
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "description": "Metadata that all server resources have. Data is generated by the server.",
-                        "properties": {
-                            "scope": {
-                                "type": "object",
-                                "description": "The scope where this resource was defined.",
-                                "properties": {
-                                    "kind": {
-                                        "type": "string",
-                                        "maxLength": 30,
-                                        "description": "The kind of the scope resource where the resource is defined.",
-                                        "enum": [
-                                            "AuthorizationProfile"
-                                        ]
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "maxLength": 100,
-                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                                        "description": "The name of the scope where the resource is defined."
-                                    }
-                                },
-                                "required": [
-                                    "kind",
-                                    "name"
-                                ]
-                            }
-                        },
-                        "required": [
-                            "scope"
-                        ]
-                    },
-                    "owner": {
-                        "$ref": "#/components/schemas/api.v1.Owner"
-                    },
-                    "finalizers": {
-                        "type": "array",
-                        "description": "List of finalizers",
-                        "items": {
-                            "$ref": "#/components/schemas/api.v1.Finalizer"
-                        }
-                    },
-                    "attributes": {
-                        "$ref": "#/components/schemas/api.v1.Attributes"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "description": "List of tags.",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 80
-                        }
-                    },
-                    "spec": {
-                        "$ref": "#/components/schemas/catalog.v1alpha1.SecretSpec"
-                    }
-                },
-                "required": [
-                    "spec",
-                    "kind",
-                    "apiVersion",
-                    "group",
-                    "metadata"
-                ]
-            },
-            "catalog.v1alpha1.SecretSpec": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "description": "Key value pairs. The value will be stored encrypted.",
-                        "x-amplify-encrypted": true,
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false
             },
             "management.v1alpha1.Secret": {
                 "description": "Definition of Secret for version v1alpha1 in group management. \n\n Secrets definitions.",
@@ -24182,6 +25082,158 @@
                 },
                 "additionalProperties": false
             },
+            "catalog.v1alpha1.Secret": {
+                "description": "Definition of Secret for version v1alpha1 in group catalog. \n\n Secrets definitions.",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "Secret",
+                "x-axway-plural": "secrets",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "AuthorizationProfile",
+                        "plural": "authprofiles"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "Webhook",
+                            "scopeKind": "AuthorizationProfile",
+                            "plural": "webhooks",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ],
+                    "toResources": []
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind Secret. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "Secret"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the Secret. Secret name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the Secret."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "AuthorizationProfile"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.SecretSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "catalog.v1alpha1.SecretSpec": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "description": "Key value pairs. The value will be stored encrypted.",
+                        "x-amplify-encrypted": true,
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
             "management.v1alpha1.AccessControlList": {
                 "description": "Definition of AccessControlList for version v1alpha1 in group management. \n\n Resource that grants access to resource(s) to the specified subject(s)",
                 "type": "object",
@@ -24192,32 +25244,32 @@
                 "x-axway-scoped": true,
                 "x-axway-scopes": [
                     {
-                        "kind": "VirtualAPI",
-                        "plural": "virtualapis"
-                    },
-                    {
                         "kind": "VirtualAPIRelease",
                         "plural": "virtualapireleases"
-                    },
-                    {
-                        "kind": "K8SCluster",
-                        "plural": "k8sclusters"
                     },
                     {
                         "kind": "Mesh",
                         "plural": "meshes"
                     },
                     {
-                        "kind": "Integration",
-                        "plural": "integrations"
+                        "kind": "VirtualAPI",
+                        "plural": "virtualapis"
+                    },
+                    {
+                        "kind": "WatchTopic",
+                        "plural": "watchtopics"
                     },
                     {
                         "kind": "Environment",
                         "plural": "environments"
                     },
                     {
-                        "kind": "WatchTopic",
-                        "plural": "watchtopics"
+                        "kind": "K8SCluster",
+                        "plural": "k8sclusters"
+                    },
+                    {
+                        "kind": "Integration",
+                        "plural": "integrations"
                     }
                 ],
                 "x-axway-references": {
@@ -24289,13 +25341,13 @@
                                         "maxLength": 30,
                                         "description": "The kind of the scope resource where the resource is defined.",
                                         "enum": [
-                                            "VirtualAPI",
                                             "VirtualAPIRelease",
-                                            "K8SCluster",
                                             "Mesh",
-                                            "Integration",
+                                            "VirtualAPI",
+                                            "WatchTopic",
                                             "Environment",
-                                            "WatchTopic"
+                                            "K8SCluster",
+                                            "Integration"
                                         ]
                                     },
                                     "name": {
@@ -24418,6 +25470,10 @@
                             "fieldType": "String"
                         }
                     },
+                    "allowCreateScoped": {
+                        "description": "Set true to allow users to create scoped resources.",
+                        "type": "boolean"
+                    },
                     "allowDelete": {
                         "description": "Set true to allow users to delete the unscoped resource.",
                         "type": "boolean"
@@ -24512,52 +25568,56 @@
                 "x-axway-scoped": true,
                 "x-axway-scopes": [
                     {
-                        "kind": "Stage",
-                        "plural": "stages"
-                    },
-                    {
-                        "kind": "AssetRelease",
-                        "plural": "assetreleases"
-                    },
-                    {
                         "kind": "Category",
                         "plural": "categories"
-                    },
-                    {
-                        "kind": "Product",
-                        "plural": "products"
-                    },
-                    {
-                        "kind": "Application",
-                        "plural": "applications"
-                    },
-                    {
-                        "kind": "Subscription",
-                        "plural": "subscriptions"
-                    },
-                    {
-                        "kind": "ProductRelease",
-                        "plural": "productreleases"
-                    },
-                    {
-                        "kind": "ProductPlanUnit",
-                        "plural": "productplanunits"
                     },
                     {
                         "kind": "Marketplace",
                         "plural": "marketplaces"
                     },
                     {
-                        "kind": "AuthorizationProfile",
-                        "plural": "authprofiles"
+                        "kind": "Application",
+                        "plural": "applications"
+                    },
+                    {
+                        "kind": "ProductRelease",
+                        "plural": "productreleases"
+                    },
+                    {
+                        "kind": "Product",
+                        "plural": "products"
                     },
                     {
                         "kind": "Asset",
                         "plural": "assets"
                     },
                     {
+                        "kind": "AuthorizationProfile",
+                        "plural": "authprofiles"
+                    },
+                    {
                         "kind": "ProductPlan",
                         "plural": "productplans"
+                    },
+                    {
+                        "kind": "Subscription",
+                        "plural": "subscriptions"
+                    },
+                    {
+                        "kind": "AssetRelease",
+                        "plural": "assetreleases"
+                    },
+                    {
+                        "kind": "Stage",
+                        "plural": "stages"
+                    },
+                    {
+                        "kind": "SupportContact",
+                        "plural": "supportcontacts"
+                    },
+                    {
+                        "kind": "ProductPlanUnit",
+                        "plural": "productplanunits"
                     }
                 ],
                 "x-axway-references": {
@@ -24629,18 +25689,19 @@
                                         "maxLength": 30,
                                         "description": "The kind of the scope resource where the resource is defined.",
                                         "enum": [
-                                            "Stage",
-                                            "AssetRelease",
                                             "Category",
-                                            "Product",
-                                            "Application",
-                                            "Subscription",
-                                            "ProductRelease",
-                                            "ProductPlanUnit",
                                             "Marketplace",
-                                            "AuthorizationProfile",
+                                            "Application",
+                                            "ProductRelease",
+                                            "Product",
                                             "Asset",
-                                            "ProductPlan"
+                                            "AuthorizationProfile",
+                                            "ProductPlan",
+                                            "Subscription",
+                                            "AssetRelease",
+                                            "Stage",
+                                            "SupportContact",
+                                            "ProductPlanUnit"
                                         ]
                                     },
                                     "name": {
@@ -24762,6 +25823,10 @@
                         "x-axway-code-gen-java": {
                             "fieldType": "String"
                         }
+                    },
+                    "allowCreateScoped": {
+                        "description": "Set true to allow users to create scoped resources.",
+                        "type": "boolean"
                     },
                     "allowDelete": {
                         "description": "Set true to allow users to delete the unscoped resource.",
@@ -25052,6 +26117,10 @@
                         "x-axway-code-gen-java": {
                             "fieldType": "String"
                         }
+                    },
+                    "allowCreateScoped": {
+                        "description": "Set true to allow users to create scoped resources.",
+                        "type": "boolean"
                     },
                     "allowDelete": {
                         "description": "Set true to allow users to delete the unscoped resource.",
