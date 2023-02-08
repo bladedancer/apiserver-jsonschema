@@ -55,6 +55,10 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.Subscription"
         },
         {
+            "title": "SubscriptionJob (Subscription)",
+            "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionJob"
+        },
+        {
             "title": "Environment",
             "$ref": "#/components/schemas/management.v1alpha1.Environment"
         },
@@ -183,6 +187,10 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.ProductVisibility"
         },
         {
+            "title": "ConsumerProductVisibility (Marketplace)",
+            "$ref": "#/components/schemas/catalog.v1alpha1.ConsumerProductVisibility"
+        },
+        {
             "title": "SupportContact",
             "$ref": "#/components/schemas/catalog.v1.SupportContact"
         },
@@ -213,6 +221,10 @@
         {
             "title": "ProductPlan",
             "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlan"
+        },
+        {
+            "title": "ProductPlanJob (ProductPlan)",
+            "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanJob"
         },
         {
             "title": "Quota (ProductPlan)",
@@ -253,6 +265,10 @@
         {
             "title": "APIKeyAuthRule (VirtualAPI | VirtualAPIRelease)",
             "$ref": "#/components/schemas/management.v1alpha1.APIKeyAuthRule"
+        },
+        {
+            "title": "RateLimitRule (VirtualAPI | VirtualAPIRelease)",
+            "$ref": "#/components/schemas/management.v1alpha1.RateLimitRule"
         },
         {
             "title": "AssetMapping (Asset)",
@@ -339,20 +355,20 @@
             "$ref": "#/components/schemas/catalog.v1alpha1.CredentialRequestDefinition"
         },
         {
-            "title": "Secret (Environment | Integration)",
-            "$ref": "#/components/schemas/management.v1alpha1.Secret"
-        },
-        {
             "title": "Secret (AuthorizationProfile)",
             "$ref": "#/components/schemas/catalog.v1alpha1.Secret"
         },
         {
-            "title": "AccessControlList (VirtualAPIRelease | Mesh | VirtualAPI | WatchTopic | Environment | K8SCluster | Integration)",
-            "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
+            "title": "Secret (Integration | Environment)",
+            "$ref": "#/components/schemas/management.v1alpha1.Secret"
         },
         {
-            "title": "AccessControlList (Category | Marketplace | Application | ProductRelease | Product | Asset | AuthorizationProfile | ProductPlan | Subscription | AssetRelease | Stage | SupportContact | ProductPlanUnit)",
+            "title": "AccessControlList (Asset | SupportContact | AssetRelease | Application | ProductPlanUnit | AuthorizationProfile | Marketplace | Stage | Subscription | ProductRelease | ProductPlan | Product | Category)",
             "$ref": "#/components/schemas/catalog.v1alpha1.AccessControlList"
+        },
+        {
+            "title": "AccessControlList (VirtualAPIRelease | Environment | Mesh | VirtualAPI | WatchTopic | Integration | K8SCluster)",
+            "$ref": "#/components/schemas/management.v1alpha1.AccessControlList"
         },
         {
             "title": "AccessControlList (ResourceGroup)",
@@ -687,6 +703,30 @@
                 "required": [
                     "spec"
                 ]
+            },
+            "api.v1.RateLimit": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "type": "string",
+                        "enum": [
+                            "SECOND",
+                            "MINUTE",
+                            "HOUR"
+                        ],
+                        "description": "The unit of time over which the limit applies."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "The allowed number of requests per unit of time."
+                    }
+                },
+                "required": [
+                    "unit",
+                    "limit"
+                ],
+                "additionalProperties": false
             },
             "management.v1alpha1.WatchTopic": {
                 "description": "Definition of WatchTopic for version v1alpha1 in group management. \n\n Resource representing a set of filters for the Agents to create a GRPC Watch stream",
@@ -1772,6 +1812,7 @@
                 "x-axway-subresources": [
                     "access",
                     "icon",
+                    "latestrelease",
                     "status",
                     "state",
                     "references"
@@ -1927,6 +1968,17 @@
                         },
                         {
                             "group": "catalog",
+                            "kind": "AssetRelease",
+                            "plural": "assetreleases",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
                             "kind": "Category",
                             "plural": "categories",
                             "versions": [
@@ -2022,6 +2074,9 @@
                     "icon": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.AssetIcon"
                     },
+                    "latestrelease": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.AssetLatestrelease"
+                    },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.AssetStatus"
                     },
@@ -2074,6 +2129,19 @@
                                     "minor",
                                     "patch"
                                 ]
+                            },
+                            "previousReleases": {
+                                "type": "object",
+                                "properties": {
+                                    "updateState": {
+                                        "type": "string",
+                                        "description": "Updates all prior non-archived releases to the deprecated state.",
+                                        "enum": [
+                                            "deprecated"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "required": [
@@ -2108,6 +2176,24 @@
                 "type": "string",
                 "description": "Image for the asset expressed as a Data-Uri (https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)",
                 "pattern": "^data:((?:\\w+\\/(?:(?!;).)+)?)((?:;[\\w\\W]*?[^;])*),(.+)$"
+            },
+            "catalog.v1alpha1.AssetLatestrelease": {
+                "description": "Provides newest non-archived release and version. Will be unassigned if no releases exist.",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "x-amplify-kind-ref": "AssetRelease",
+                        "x-amplify-kind-ref-type": "soft",
+                        "x-amplify-kind-ref-collateral": [
+                            "../version"
+                        ]
+                    },
+                    "version": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
             },
             "catalog.v1alpha1.AssetStatus": {
                 "type": "object",
@@ -2361,6 +2447,18 @@
                 ],
                 "x-axway-references": {
                     "fromResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "Asset",
+                            "plural": "assets",
+                            "subResourceName": "latestrelease",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
                         {
                             "group": "catalog",
                             "kind": "Product",
@@ -4340,7 +4438,9 @@
                 "x-axway-subresources": [
                     "marketplace",
                     "approval",
-                    "status"
+                    "status",
+                    "references",
+                    "state"
                 ],
                 "x-axway-references": {
                     "fromResources": [
@@ -4368,6 +4468,18 @@
                             "types": [
                                 "HARD"
                             ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "Subscription",
+                            "plural": "subscriptions",
+                            "subResourceName": "references",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
                         }
                     ],
                     "toResources": [
@@ -4380,6 +4492,17 @@
                             ],
                             "types": [
                                 "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "Subscription",
+                            "plural": "subscriptions",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
                             ]
                         },
                         {
@@ -4481,6 +4604,12 @@
                     },
                     "status": {
                         "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionStatus"
+                    },
+                    "references": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionReferences"
+                    },
+                    "state": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionState"
                     }
                 },
                 "required": [
@@ -4521,7 +4650,7 @@
             },
             "catalog.v1alpha1.SubscriptionMarketplace": {
                 "type": "object",
-                "description": "Details about the marketplace Application.",
+                "description": "Details about the marketplace Subscription.",
                 "required": [
                     "name",
                     "resource"
@@ -4535,14 +4664,14 @@
                     },
                     "resource": {
                         "type": "object",
-                        "description": "The Marketplace Application resource details.",
+                        "description": "The Marketplace Subscription resource details.",
                         "required": [
                             "metadata"
                         ],
                         "properties": {
                             "metadata": {
                                 "type": "object",
-                                "description": "Marketplace Application metadata.",
+                                "description": "Marketplace Subscription metadata.",
                                 "properties": {
                                     "createUserId": {
                                         "type": "string",
@@ -4560,7 +4689,7 @@
                                 "additionalProperties": false
                             },
                             "owner": {
-                                "description": "Owner of the Application.",
+                                "description": "Owner of the Subscription.",
                                 "type": "object",
                                 "properties": {
                                     "type": {
@@ -4678,6 +4807,406 @@
                 "required": [
                     "level"
                 ]
+            },
+            "catalog.v1alpha1.SubscriptionReferences": {
+                "type": "object",
+                "properties": {
+                    "subscription": {
+                        "type": "string",
+                        "description": "Reference a source Subscription if the Subscription was generated from a Subscription migration to a new Product Plan.",
+                        "x-amplify-kind-ref": "Subscription",
+                        "x-amplify-kind-ref-type": "soft"
+                    }
+                }
+            },
+            "catalog.v1alpha1.SubscriptionState": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "migrated",
+                            "migrationScheduled"
+                        ]
+                    },
+                    "reason": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "Additional info on the state."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            "catalog.v1alpha1.SubscriptionJob": {
+                "description": "Definition of SubscriptionJob for version v1alpha1 in group catalog. \n\n Resource representing an job to be executed on a Subscription.",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "SubscriptionJob",
+                "x-axway-plural": "subscriptionjobs",
+                "x-axway-scoped": true,
+                "x-axway-subresources": [
+                    "status"
+                ],
+                "x-axway-scopes": [
+                    {
+                        "kind": "Subscription",
+                        "plural": "subscriptions"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [],
+                    "toResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "ProductPlanJob",
+                            "scopeKind": "ProductPlan",
+                            "plural": "productplanjobs",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "ProductPlan",
+                            "plural": "productplans",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ]
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind SubscriptionJob. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "SubscriptionJob"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the SubscriptionJob. SubscriptionJob name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the SubscriptionJob."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "Subscription"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionJobStatus"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "catalog.v1alpha1.SubscriptionJobSpec": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec.PlanMigration"
+                            }
+                        ],
+                        "discriminator": {
+                            "propertyName": "type",
+                            "mapping": {
+                                "planMigration": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec.PlanMigration"
+                            }
+                        }
+                    },
+                    "when": {
+                        "type": "object",
+                        "description": "Describes when to execute the action.",
+                        "properties": {
+                            "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Time when the migration should execute."
+                            }
+                        }
+                    },
+                    "postExecute": {
+                        "type": "object",
+                        "properties": {
+                            "onSuccess": {
+                                "type": "array",
+                                "description": "Actions to be executed after the new Subscription was created.",
+                                "items": {
+                                    "properties": {
+                                        "when": {
+                                            "type": "object",
+                                            "properties": {
+                                                "approvalState": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "pending",
+                                                        "rejected",
+                                                        "approved"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "action": {
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec.MigrateAssetRequests"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec.ApprovalStateChange"
+                                                }
+                                            ],
+                                            "discriminator": {
+                                                "propertyName": "type",
+                                                "mapping": {
+                                                    "migrateAssetRequests": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec.MigrateAssetRequests",
+                                                    "approvalStateChange": "#/components/schemas/catalog.v1alpha1.SubscriptionJobSpec.ApprovalStateChange"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "action"
+                ]
+            },
+            "catalog.v1alpha1.SubscriptionJobStatus": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The current status level, indicating progress towards consistency.",
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "Success",
+                            "Pending",
+                            "Error"
+                        ]
+                    },
+                    "reasons": {
+                        "description": "Reasons for the generated status.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Error",
+                                        "Success",
+                                        "Pending"
+                                    ]
+                                },
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Details of the error."
+                                },
+                                "timestamp": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Time when the update occurred."
+                                },
+                                "meta": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "detail",
+                                "timestamp"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "level"
+                ]
+            },
+            "catalog.v1alpha1.SubscriptionJobSpec.ApprovalStateChange": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "approvalStateChange"
+                        ]
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "Used to override the migrated Subscription approval state.\n",
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ]
+                    }
+                },
+                "required": [
+                    "type",
+                    "state"
+                ]
+            },
+            "catalog.v1alpha1.SubscriptionJobSpec.MigrateAssetRequests": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "migrateAccessRequests"
+                        ]
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "catalog.v1alpha1.SubscriptionJobSpec.PlanMigration": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "planMigration"
+                        ]
+                    },
+                    "productPlan": {
+                        "type": "string",
+                        "description": "The Product Plan to which to migrate the Subscription.",
+                        "x-amplify-kind-ref": "ProductPlan",
+                        "x-amplify-kind-ref-type": "soft"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Description on why the subscription was migrated.",
+                        "maxLength": 350
+                    },
+                    "productPlanJob": {
+                        "type": "string",
+                        "description": "The Product Plan Job which triggered the migration.",
+                        "x-amplify-kind-ref": "ProductPlan/ProductPlanJob",
+                        "x-amplify-kind-ref-type": "soft"
+                    }
+                },
+                "required": [
+                    "productPlan",
+                    "type"
+                ],
+                "additionalProperties": false
             },
             "management.v1alpha1.Environment": {
                 "description": "Definition of Environment for version v1alpha1 in group management. \n\n Resource representing an Amplify Central Environment.",
@@ -4880,6 +5409,19 @@
                 ],
                 "x-axway-references": {
                     "fromResources": [
+                        {
+                            "group": "management",
+                            "kind": "APIServiceInstance",
+                            "scopeKind": "Environment",
+                            "plural": "apiserviceinstances",
+                            "subResourceName": "references",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
                         {
                             "group": "catalog",
                             "kind": "Asset",
@@ -5528,6 +6070,9 @@
                 "x-axway-kind": "APIServiceInstance",
                 "x-axway-plural": "apiserviceinstances",
                 "x-axway-scoped": true,
+                "x-axway-subresources": [
+                    "references"
+                ],
                 "x-axway-scopes": [
                     {
                         "kind": "Environment",
@@ -5638,6 +6183,18 @@
                         }
                     ],
                     "toResources": [
+                        {
+                            "group": "management",
+                            "kind": "APIService",
+                            "scopeKind": "Environment",
+                            "plural": "apiservices",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
                         {
                             "group": "management",
                             "kind": "CredentialRequestDefinition",
@@ -5773,6 +6330,9 @@
                     },
                     "spec": {
                         "$ref": "#/components/schemas/management.v1alpha1.APIServiceInstanceSpec"
+                    },
+                    "references": {
+                        "$ref": "#/components/schemas/management.v1alpha1.APIServiceInstanceReferences"
                     }
                 },
                 "required": [
@@ -5848,6 +6408,17 @@
                     "endpoint"
                 ],
                 "additionalProperties": false
+            },
+            "management.v1alpha1.APIServiceInstanceReferences": {
+                "type": "object",
+                "properties": {
+                    "apiService": {
+                        "type": "string",
+                        "description": "Reference to Amplify Central APIService",
+                        "x-amplify-kind-ref": "APIService",
+                        "x-amplify-kind-ref-type": "soft"
+                    }
+                }
             },
             "management.v1alpha1.ConsumerInstance": {
                 "description": "Definition of ConsumerInstance for version v1alpha1 in group management. \n\n Resource representing a Unified Catalog Item of type API",
@@ -8945,11 +9516,18 @@
                             "schema": {
                                 "type": "object",
                                 "description": "JSON Schema draft \\#7 for describing the data to be sent back after access has been provisioned."
+                            },
+                            "policies": {
+                                "description": "Defines the policies applied on the AccessRequests generated using this definition.",
+                                "type": "object",
+                                "properties": {
+                                    "transferable": {
+                                        "type": "boolean",
+                                        "description": "Defines on if AccessRequests using this definition can be moved from their current Subscription to a new one. This update implies that quotas and references are updated depending on the new Subscription's plan."
+                                    }
+                                }
                             }
                         },
-                        "required": [
-                            "schema"
-                        ],
                         "additionalProperties": false
                     }
                 },
@@ -8988,6 +9566,18 @@
                 ],
                 "x-axway-references": {
                     "fromResources": [
+                        {
+                            "group": "management",
+                            "kind": "AccessRequest",
+                            "scopeKind": "Environment",
+                            "plural": "accessrequests",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
                         {
                             "group": "catalog",
                             "kind": "AssetRequest",
@@ -9132,6 +9722,18 @@
                             "types": [
                                 "HARD"
                             ]
+                        },
+                        {
+                            "group": "management",
+                            "kind": "AccessRequest",
+                            "scopeKind": "Environment",
+                            "plural": "accessrequests",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
                         }
                     ]
                 },
@@ -9275,7 +9877,7 @@
                         "description": "Quota information for accessing the api.",
                         "properties": {
                             "limit": {
-                                "type": "number",
+                                "type": "integer",
                                 "description": "The limit of the allowed quota for the access request."
                             },
                             "interval": {
@@ -9292,6 +9894,12 @@
                             "limit",
                             "interval"
                         ]
+                    },
+                    "accessRequest": {
+                        "type": "string",
+                        "description": "The AccessRequest from which this resource is being migrated from. Reference must be linked to the same Application and under the same Environment.",
+                        "x-amplify-kind-ref": "AccessRequest",
+                        "x-amplify-kind-ref-type": "soft"
                     }
                 },
                 "required": [
@@ -11708,7 +12316,7 @@
                     "endpoint": {
                         "description": "The url for the service. For example, https://myservice.com/graphql",
                         "type": "string",
-                        "pattern": "^(http|https):\\/\\/[A-Za-z0-9]+(?:.[A-Za-z0-9]+)?(?:.[A-Za-z0-9]+)?(?:.[A-Za-z0-9]+)?(?::([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?((\\/|\\?)\\S+)?$",
+                        "pattern": "^(http|https):\\/\\/(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])?(?::([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?((\\/|\\?)\\S+)?$",
                         "minLength": 1
                     },
                     "operations": {
@@ -12475,7 +13083,7 @@
                                 "v1alpha1"
                             ],
                             "types": [
-                                "SOFT"
+                                "HARD"
                             ]
                         }
                     ]
@@ -12607,7 +13215,7 @@
                                 "name": {
                                     "type": "string",
                                     "x-amplify-kind-ref": "Product",
-                                    "x-amplify-kind-ref-type": "soft",
+                                    "x-amplify-kind-ref-type": "hard",
                                     "maxLength": 100,
                                     "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                 }
@@ -12616,7 +13224,7 @@
                     },
                     "exclude": {
                         "type": "boolean",
-                        "description": "Determins if the list of subjects should be excluded from the product visibility."
+                        "description": "Determines if the list of subjects should be excluded from the product visibility."
                     },
                     "subjects": {
                         "type": "array",
@@ -12686,6 +13294,214 @@
                 "required": [
                     "type",
                     "value"
+                ],
+                "additionalProperties": false
+            },
+            "catalog.v1alpha1.ConsumerProductVisibility": {
+                "description": "Definition of ConsumerProductVisibility for version v1alpha1 in group catalog. \n\n Resource representing Products visibility settings in the Marketplace for Consumer Organizations.",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "ConsumerProductVisibility",
+                "x-axway-plural": "consumerproductvisibility",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "Marketplace",
+                        "plural": "marketplaces"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [],
+                    "toResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "Product",
+                            "plural": "products",
+                            "versions": [
+                                "v1",
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
+                            ]
+                        }
+                    ]
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind ConsumerProductVisibility. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "ConsumerProductVisibility"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the ConsumerProductVisibility. ConsumerProductVisibility name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the ConsumerProductVisibility."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "Marketplace"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.ConsumerProductVisibilitySpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "catalog.v1alpha1.ConsumerProductVisibilitySpec": {
+                "type": "object",
+                "required": [
+                    "products"
+                ],
+                "properties": {
+                    "products": {
+                        "description": "Defines where the visibility settings apply.",
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "x-amplify-kind-ref": "Product",
+                                    "x-amplify-kind-ref-type": "hard",
+                                    "maxLength": 100,
+                                    "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
+                                }
+                            }
+                        }
+                    },
+                    "subjects": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/catalog.v1alpha1.ConsumerProductVisibilitySpec.OrgRef"
+                                }
+                            ],
+                            "discriminator": {
+                                "propertyName": "type",
+                                "mapping": {
+                                    "org": "#/components/schemas/catalog.v1alpha1.ConsumerProductVisibilitySpec.OrgRef"
+                                }
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "catalog.v1alpha1.ConsumerProductVisibilitySpec.OrgRef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "org"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "ID of the consumer organization.",
+                        "maxLength": 36
+                    }
+                },
+                "required": [
+                    "type",
+                    "id"
                 ],
                 "additionalProperties": false
             },
@@ -12801,12 +13617,154 @@
                         "pattern": "^\\+[1-9]\\d{1,14}$",
                         "x-amplify-encrypted": true,
                         "description": "String of the E.164 format of the phone number, e.g. +11234567899"
+                    },
+                    "officeHours": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string",
+                                "description": "Long IANA Time Zone format. Examples: 'America/New_York' or 'Europe/Paris'",
+                                "pattern": "^[\\-A-Za-z_+0-9]{1,14}(\\/[\\-A-Za-z_+0-9]{1,14}){0,2}$"
+                            },
+                            "periods": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "openTime": {
+                                            "type": "string",
+                                            "pattern": "^(2[0-4]|[01][0-9]):([0-5][0-9])$",
+                                            "description": "Time in 24hr ISO 8601 extended format (hh:mm). Valid values are 00:00-24:00."
+                                        },
+                                        "openDay": {
+                                            "type": "string",
+                                            "enum": [
+                                                "monday",
+                                                "tuesday",
+                                                "wednesday",
+                                                "thursday",
+                                                "friday",
+                                                "saturday",
+                                                "sunday"
+                                            ]
+                                        },
+                                        "closeTime": {
+                                            "type": "string",
+                                            "pattern": "^(2[0-4]|[01][0-9]):([0-5][0-9])$",
+                                            "description": "Time in 24hr ISO 8601 extended format (hh:mm). Valid values are 00:00-24:00."
+                                        },
+                                        "closeDay": {
+                                            "type": "string",
+                                            "enum": [
+                                                "monday",
+                                                "tuesday",
+                                                "wednesday",
+                                                "thursday",
+                                                "friday",
+                                                "saturday",
+                                                "sunday"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "openTime",
+                                        "openDay",
+                                        "closeTime",
+                                        "closeDay"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "timezone",
+                            "periods"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "alternativeContacts": {
+                        "type": "object",
+                        "properties": {
+                            "urls": {
+                                "type": "array",
+                                "description": "Alternative contact URLs.",
+                                "maxItems": 5,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "maxLength": 30,
+                                            "description": "URL hosting service name. Examples: msteams, slack",
+                                            "x-extensible-enum": [
+                                                "msteams",
+                                                "slack"
+                                            ]
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Title for the provided URL.",
+                                            "maxLength": 100
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "URL value.",
+                                            "pattern": "^https?://[\\w-_\\:\\.\\?\\/=%&#~\\[\\]\\(\\)@!$&',;]*$"
+                                        }
+                                    },
+                                    "required": [
+                                        "title",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "email"
                 ]
+            },
+            "catalog.v1.SupportContactSpec.UrlAlternativeContact": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "url"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "Name of the provider. Example: msteams, slack",
+                        "maxLength": 30,
+                        "x-extensible-enum": [
+                            "msteams",
+                            "slack"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Title for the provided URL.",
+                        "maxLength": 100
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "URL value.",
+                        "pattern": "^https?://[\\w-_\\:\\.\\?\\/=%&#~\\[\\]\\(\\)@!$&',;]*$"
+                    }
+                },
+                "required": [
+                    "title",
+                    "value"
+                ],
+                "additionalProperties": false
             },
             "catalog.v1alpha1.SupportContact": {
                 "description": "Definition of SupportContact for version v1alpha1 in group catalog. \n\n Resource representing a Support Contact information.",
@@ -12920,12 +13878,154 @@
                         "pattern": "^\\+[1-9]\\d{1,14}$",
                         "x-amplify-encrypted": true,
                         "description": "String of the E.164 format of the phone number, e.g. +11234567899"
+                    },
+                    "officeHours": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string",
+                                "description": "Long IANA Time Zone format. Examples: 'America/New_York' or 'Europe/Paris'",
+                                "pattern": "^[\\-A-Za-z_+0-9]{1,14}(\\/[\\-A-Za-z_+0-9]{1,14}){0,2}$"
+                            },
+                            "periods": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "openTime": {
+                                            "type": "string",
+                                            "pattern": "^(2[0-4]|[01][0-9]):([0-5][0-9])$",
+                                            "description": "Time in 24hr ISO 8601 extended format (hh:mm). Valid values are 00:00-24:00."
+                                        },
+                                        "openDay": {
+                                            "type": "string",
+                                            "enum": [
+                                                "monday",
+                                                "tuesday",
+                                                "wednesday",
+                                                "thursday",
+                                                "friday",
+                                                "saturday",
+                                                "sunday"
+                                            ]
+                                        },
+                                        "closeTime": {
+                                            "type": "string",
+                                            "pattern": "^(2[0-4]|[01][0-9]):([0-5][0-9])$",
+                                            "description": "Time in 24hr ISO 8601 extended format (hh:mm). Valid values are 00:00-24:00."
+                                        },
+                                        "closeDay": {
+                                            "type": "string",
+                                            "enum": [
+                                                "monday",
+                                                "tuesday",
+                                                "wednesday",
+                                                "thursday",
+                                                "friday",
+                                                "saturday",
+                                                "sunday"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "openTime",
+                                        "openDay",
+                                        "closeTime",
+                                        "closeDay"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "timezone",
+                            "periods"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "alternativeContacts": {
+                        "type": "object",
+                        "properties": {
+                            "urls": {
+                                "type": "array",
+                                "description": "Alternative contact URLs.",
+                                "maxItems": 5,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "maxLength": 30,
+                                            "description": "URL hosting service name. Examples: msteams, slack",
+                                            "x-extensible-enum": [
+                                                "msteams",
+                                                "slack"
+                                            ]
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Title for the provided URL.",
+                                            "maxLength": 100
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "URL value.",
+                                            "pattern": "^https?://[\\w-_\\:\\.\\?\\/=%&#~\\[\\]\\(\\)@!$&',;]*$"
+                                        }
+                                    },
+                                    "required": [
+                                        "title",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "email"
                 ]
+            },
+            "catalog.v1alpha1.SupportContactSpec.UrlAlternativeContact": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "url"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "Name of the provider. Example: msteams, slack",
+                        "maxLength": 30,
+                        "x-extensible-enum": [
+                            "msteams",
+                            "slack"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Title for the provided URL.",
+                        "maxLength": 100
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "URL value.",
+                        "pattern": "^https?://[\\w-_\\:\\.\\?\\/=%&#~\\[\\]\\(\\)@!$&',;]*$"
+                    }
+                },
+                "required": [
+                    "title",
+                    "value"
+                ],
+                "additionalProperties": false
             },
             "catalog.v1.Product": {
                 "description": "Definition of Product for version v1 in group catalog. \n\n Resource representing an Amplify Central Product in the Products Catalog.",
@@ -13000,7 +14100,19 @@
                                 "v1alpha1"
                             ],
                             "types": [
-                                "SOFT"
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "ConsumerProductVisibility",
+                            "scopeKind": "Marketplace",
+                            "plural": "consumerproductvisibility",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
                             ]
                         },
                         {
@@ -13247,6 +14359,19 @@
                                     "minor",
                                     "patch"
                                 ]
+                            },
+                            "previousReleases": {
+                                "type": "object",
+                                "properties": {
+                                    "updateState": {
+                                        "type": "string",
+                                        "description": "Updates all prior non-archived releases to the deprecated state.",
+                                        "enum": [
+                                            "deprecated"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "required": [
@@ -13468,7 +14593,19 @@
                                 "v1alpha1"
                             ],
                             "types": [
-                                "SOFT"
+                                "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "ConsumerProductVisibility",
+                            "scopeKind": "Marketplace",
+                            "plural": "consumerproductvisibility",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "HARD"
                             ]
                         },
                         {
@@ -13715,6 +14852,19 @@
                                     "minor",
                                     "patch"
                                 ]
+                            },
+                            "previousReleases": {
+                                "type": "object",
+                                "properties": {
+                                    "updateState": {
+                                        "type": "string",
+                                        "description": "Updates all prior non-archived releases to the deprecated state.",
+                                        "enum": [
+                                            "deprecated"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "required": [
@@ -15015,6 +16165,18 @@
                         },
                         {
                             "group": "catalog",
+                            "kind": "ProductPlanJob",
+                            "scopeKind": "ProductPlan",
+                            "plural": "productplanjobs",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
                             "kind": "Subscription",
                             "plural": "subscriptions",
                             "versions": [
@@ -15022,6 +16184,18 @@
                             ],
                             "types": [
                                 "HARD"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "SubscriptionJob",
+                            "scopeKind": "Subscription",
+                            "plural": "subscriptionjobs",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
                             ]
                         }
                     ],
@@ -15236,7 +16410,7 @@
                                     },
                                     "length": {
                                         "type": "number",
-                                        "description": "The subscription inverval length"
+                                        "description": "The subscription interval length"
                                     }
                                 },
                                 "additionalProperties": false
@@ -15344,6 +16518,280 @@
                 "required": [
                     "level"
                 ]
+            },
+            "catalog.v1alpha1.ProductPlanJob": {
+                "description": "Definition of ProductPlanJob for version v1alpha1 in group catalog. \n\n Resource representing an job to be executed on a Product Plan.",
+                "type": "object",
+                "x-axway-group": "catalog",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "ProductPlanJob",
+                "x-axway-plural": "productplanjobs",
+                "x-axway-scoped": true,
+                "x-axway-subresources": [
+                    "status"
+                ],
+                "x-axway-scopes": [
+                    {
+                        "kind": "ProductPlan",
+                        "plural": "productplans"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "SubscriptionJob",
+                            "scopeKind": "Subscription",
+                            "plural": "subscriptionjobs",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ],
+                    "toResources": [
+                        {
+                            "group": "catalog",
+                            "kind": "ProductPlan",
+                            "plural": "productplans",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ]
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the catalog group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "catalog"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind ProductPlanJob. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "ProductPlanJob"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the ProductPlanJob. ProductPlanJob name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the ProductPlanJob."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "ProductPlan"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanJobSpec"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanJobStatus"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "catalog.v1alpha1.ProductPlanJobSpec": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/catalog.v1alpha1.ProductPlanJobSpec.SubscriptionsMigration"
+                            }
+                        ],
+                        "discriminator": {
+                            "propertyName": "type",
+                            "mapping": {
+                                "migrateSubscriptions": "#/components/schemas/catalog.v1alpha1.ProductPlanJobSpec.SubscriptionsMigration"
+                            }
+                        }
+                    },
+                    "when": {
+                        "type": "object",
+                        "description": "Describes when to execute the action.",
+                        "properties": {
+                            "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Time when the migration should execute."
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "action"
+                ]
+            },
+            "catalog.v1alpha1.ProductPlanJobStatus": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The current status level, indicating progress towards consistency.",
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "enum": [
+                            "Success",
+                            "Pending",
+                            "Error"
+                        ]
+                    },
+                    "reasons": {
+                        "description": "Reasons for the generated status.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Error",
+                                        "Success",
+                                        "Pending"
+                                    ]
+                                },
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Details of the error."
+                                },
+                                "timestamp": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Time when the update occurred."
+                                },
+                                "meta": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "detail",
+                                "timestamp"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "level"
+                ]
+            },
+            "catalog.v1alpha1.ProductPlanJobSpec.SubscriptionsMigration": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "x-amplify-index": {},
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        },
+                        "enum": [
+                            "migrateSubscriptions"
+                        ]
+                    },
+                    "productPlan": {
+                        "type": "string",
+                        "description": "The Product Plan to which to migrate the existing Product Subscriptions.",
+                        "x-amplify-kind-ref": "ProductPlan",
+                        "x-amplify-kind-ref-type": "soft"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Description on why the subscriptions was migrated.",
+                        "maxLength": 350
+                    }
+                },
+                "required": [
+                    "productPlan",
+                    "type"
+                ],
+                "additionalProperties": false
             },
             "catalog.v1.Quota": {
                 "description": "Definition of Quota for version v1 in group catalog. \n\n Resource representing an Amplify Central Plan Quota.",
@@ -15541,6 +16989,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/catalog.v1.QuotaSpec.GraduatedPricingType"
+                            },
+                            {
+                                "$ref": "#/components/schemas/catalog.v1.QuotaSpec.PerUnitPricingType"
                             }
                         ],
                         "discriminator": {
@@ -15549,7 +17000,8 @@
                                 "fixed": "#/components/schemas/catalog.v1.QuotaSpec.FixedPricingType",
                                 "unlimited": "#/components/schemas/catalog.v1.QuotaSpec.UnlimitedPricingType",
                                 "volume": "#/components/schemas/catalog.v1.QuotaSpec.VolumePricingType",
-                                "graduated": "#/components/schemas/catalog.v1.QuotaSpec.GraduatedPricingType"
+                                "graduated": "#/components/schemas/catalog.v1.QuotaSpec.GraduatedPricingType",
+                                "perunit": "#/components/schemas/catalog.v1.QuotaSpec.PerUnitPricingType"
                             }
                         }
                     },
@@ -15760,7 +17212,8 @@
                         }
                     },
                     "value": {
-                        "type": "number",
+                        "type": "integer",
+                        "minimum": 1,
                         "description": "The limit of the unit that is provided."
                     },
                     "overages": {
@@ -15797,7 +17250,8 @@
                         }
                     },
                     "value": {
-                        "type": "number",
+                        "type": "integer",
+                        "minimum": 1,
                         "description": "The limit of the unit that is provided."
                     }
                 },
@@ -15868,6 +17322,32 @@
                 },
                 "required": [
                     "type"
+                ],
+                "additionalProperties": false
+            },
+            "catalog.v1.QuotaSpec.PerUnitPricingType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "perunit"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "cost": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "The cost per unit of usage.",
+                        "minimum": 0,
+                        "maximum": 999999999
+                    }
+                },
+                "required": [
+                    "type",
+                    "cost"
                 ],
                 "additionalProperties": false
             },
@@ -16195,6 +17675,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/catalog.v1alpha1.QuotaSpec.GraduatedPricingType"
+                            },
+                            {
+                                "$ref": "#/components/schemas/catalog.v1alpha1.QuotaSpec.PerUnitPricingType"
                             }
                         ],
                         "discriminator": {
@@ -16203,7 +17686,8 @@
                                 "fixed": "#/components/schemas/catalog.v1alpha1.QuotaSpec.FixedPricingType",
                                 "unlimited": "#/components/schemas/catalog.v1alpha1.QuotaSpec.UnlimitedPricingType",
                                 "volume": "#/components/schemas/catalog.v1alpha1.QuotaSpec.VolumePricingType",
-                                "graduated": "#/components/schemas/catalog.v1alpha1.QuotaSpec.GraduatedPricingType"
+                                "graduated": "#/components/schemas/catalog.v1alpha1.QuotaSpec.GraduatedPricingType",
+                                "perunit": "#/components/schemas/catalog.v1alpha1.QuotaSpec.PerUnitPricingType"
                             }
                         }
                     },
@@ -16414,7 +17898,8 @@
                         }
                     },
                     "value": {
-                        "type": "number",
+                        "type": "integer",
+                        "minimum": 1,
                         "description": "The limit of the unit that is provided."
                     },
                     "overages": {
@@ -16451,7 +17936,8 @@
                         }
                     },
                     "value": {
-                        "type": "number",
+                        "type": "integer",
+                        "minimum": 1,
                         "description": "The limit of the unit that is provided."
                     }
                 },
@@ -16522,6 +18008,32 @@
                 },
                 "required": [
                     "type"
+                ],
+                "additionalProperties": false
+            },
+            "catalog.v1alpha1.QuotaSpec.PerUnitPricingType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "perunit"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "cost": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "The cost per unit of usage.",
+                        "minimum": 0,
+                        "maximum": 999999999
+                    }
+                },
+                "required": [
+                    "type",
+                    "cost"
                 ],
                 "additionalProperties": false
             },
@@ -17807,7 +19319,7 @@
                                 "type": "string",
                                 "description": "The URI from which to fetch the JSON Web Key Set(JWKS).",
                                 "minLength": 1,
-                                "pattern": "^(http|https):\\/\\/[A-Za-z0-9]+(?:.[A-Za-z0-9]+)?(?:.[A-Za-z0-9]+)?(?:.[A-Za-z0-9]+)?(?::([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?((\\/|\\?)\\S+)?$"
+                                "pattern": "^(http|https):\\/\\/(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])?(?::([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?((\\/|\\?)\\S+)?$"
                             },
                             "cacheDurationSecs": {
                                 "type": "integer",
@@ -18056,9 +19568,6 @@
             "management.v1alpha1.AmplifyOAuth2AuthRuleSpec.OAuthFlows": {
                 "type": "object",
                 "properties": {
-                    "implicit": {
-                        "$ref": "#/components/schemas/management.v1alpha1.AmplifyOAuth2AuthRuleSpec.ImplicitOAuthFlow"
-                    },
                     "password": {
                         "$ref": "#/components/schemas/management.v1alpha1.AmplifyOAuth2AuthRuleSpec.PasswordOAuthFlow"
                     },
@@ -18067,23 +19576,6 @@
                     },
                     "authorizationCode": {
                         "$ref": "#/components/schemas/management.v1alpha1.AmplifyOAuth2AuthRuleSpec.AuthorizationCodeOAuthFlow"
-                    }
-                },
-                "additionalProperties": false
-            },
-            "management.v1alpha1.AmplifyOAuth2AuthRuleSpec.ImplicitOAuthFlow": {
-                "type": "object",
-                "required": [
-                    "authorizationUrl"
-                ],
-                "properties": {
-                    "authorizationUrl": {
-                        "type": "string",
-                        "format": "uri-reference"
-                    },
-                    "refreshUrl": {
-                        "type": "string",
-                        "format": "uri-reference"
                     }
                 },
                 "additionalProperties": false
@@ -18101,6 +19593,13 @@
                     "refreshUrl": {
                         "type": "string",
                         "format": "uri-reference"
+                    },
+                    "scopes": {
+                        "type": "object",
+                        "description": "Available scopes for this OAuth flow. Contains a mapping from scope name to scope description.\n",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
                     }
                 },
                 "additionalProperties": false
@@ -18118,6 +19617,13 @@
                     "refreshUrl": {
                         "type": "string",
                         "format": "uri-reference"
+                    },
+                    "scopes": {
+                        "type": "object",
+                        "description": "Available scopes for this OAuth flow. Contains a mapping from scope name to scope description.\n",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
                     }
                 },
                 "additionalProperties": false
@@ -18140,6 +19646,13 @@
                     "refreshUrl": {
                         "type": "string",
                         "format": "uri-reference"
+                    },
+                    "scopes": {
+                        "type": "object",
+                        "description": "Available scopes for this OAuth flow. Contains a mapping from scope name to scope description.\n",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
                     }
                 },
                 "additionalProperties": false
@@ -18308,6 +19821,152 @@
                     }
                 },
                 "additionalProperties": false
+            },
+            "management.v1alpha1.RateLimitRule": {
+                "description": "Definition of RateLimitRule for version v1alpha1 in group management. \n\n Rule to apply a rate limit to a service or operation.",
+                "type": "object",
+                "x-axway-group": "management",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "RateLimitRule",
+                "x-axway-plural": "ratelimitrules",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "VirtualAPI",
+                        "plural": "virtualapis"
+                    },
+                    {
+                        "kind": "VirtualAPIRelease",
+                        "plural": "virtualapireleases"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [
+                        {
+                            "group": "management",
+                            "kind": "VirtualService",
+                            "scopeKind": "VirtualAPIRelease",
+                            "plural": "virtualservices",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ],
+                    "toResources": []
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the management group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "management"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind RateLimitRule. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "RateLimitRule"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the RateLimitRule. RateLimitRule name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the RateLimitRule."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "VirtualAPI",
+                                            "VirtualAPIRelease"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/management.v1alpha1.RateLimitRuleSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "management.v1alpha1.RateLimitRuleSpec": {
+                "$ref": "#/components/schemas/api.v1.RateLimit"
             },
             "catalog.v1alpha1.AssetMapping": {
                 "description": "Definition of AssetMapping for version v1alpha1 in group catalog. \n\n An AssetMapping based on the template or manually created.",
@@ -19784,11 +21443,18 @@
                             "schema": {
                                 "type": "object",
                                 "description": "JSON Schema draft \\#7 for describing the data to be sent back after access has been provisioned."
+                            },
+                            "policies": {
+                                "description": "Defines the policies applied on the AccessRequests generated using this definition.",
+                                "type": "object",
+                                "properties": {
+                                    "transferable": {
+                                        "type": "boolean",
+                                        "description": "Defines on if AssetRequests using this definition can be moved from their current Subscription to a new one."
+                                    }
+                                }
                             }
                         },
-                        "required": [
-                            "schema"
-                        ],
                         "additionalProperties": false
                     }
                 },
@@ -19865,6 +21531,18 @@
                             "types": [
                                 "HARD"
                             ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "AssetRequest",
+                            "scopeKind": "Application",
+                            "plural": "assetrequests",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
                         }
                     ],
                     "toResources": [
@@ -19931,6 +21609,18 @@
                             "kind": "AccessRequest",
                             "scopeKind": "Environment",
                             "plural": "accessrequests",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "catalog",
+                            "kind": "AssetRequest",
+                            "scopeKind": "Application",
+                            "plural": "assetrequests",
                             "versions": [
                                 "v1alpha1"
                             ],
@@ -20101,6 +21791,12 @@
                         "description": "reference to the Subscription to be used to access the Asset Resource.",
                         "x-amplify-kind-ref": "Subscription",
                         "x-amplify-kind-ref-type": "hard"
+                    },
+                    "assetRequest": {
+                        "type": "string",
+                        "description": "The AssetRequest from which this resource is being migrated from. Reference must be in the same Application.",
+                        "x-amplify-kind-ref": "AssetRequest",
+                        "x-amplify-kind-ref-type": "soft"
                     }
                 },
                 "required": [
@@ -20535,7 +22231,7 @@
                         "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
                     },
                     "namespace": {
-                        "description": "Namespace which contains the K8s Secret.",
+                        "description": "Namespace which contains the K8s Secret. \nIf none is provided, the secret will be sourced from the namespace into which Amplify Gateway is installed.\n",
                         "type": "string",
                         "minLength": 1,
                         "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
@@ -20543,8 +22239,7 @@
                 },
                 "required": [
                     "provider",
-                    "name",
-                    "namespace"
+                    "name"
                 ]
             },
             "management.v1alpha1.ExternalSecretSpec.TlsData": {
@@ -20707,6 +22402,18 @@
                         }
                     ],
                     "toResources": [
+                        {
+                            "group": "management",
+                            "kind": "RateLimitRule",
+                            "scopeKind": "VirtualAPIRelease",
+                            "plural": "ratelimitrules",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
                         {
                             "group": "management",
                             "kind": "ExternalSecret",
@@ -21022,6 +22729,14 @@
                     "forwardAuthCredentials": {
                         "type": "boolean",
                         "description": "Parameter not required meaning auth credentials are not forwarded to the backend by default. If set to true, auth credentials are forwarded."
+                    },
+                    "scopes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "description": "If specified, scope list must be a subset of the scopes defined in the referenced OAuth Rule.\n"
                     }
                 },
                 "additionalProperties": false,
@@ -21175,6 +22890,25 @@
                     }
                 }
             },
+            "management.v1alpha1.VirtualServiceSpec.Ratelimitrule": {
+                "description": "The rate limit rule reference.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "rateLimit": {
+                        "description": "The rate limit rule name.",
+                        "type": "string",
+                        "x-amplify-kind-ref": "RateLimitRule",
+                        "x-amplify-kind-ref-type": "soft",
+                        "x-amplify-kind-ref-collateral": [
+                            "../"
+                        ]
+                    }
+                },
+                "required": [
+                    "rateLimit"
+                ]
+            },
             "management.v1alpha1.VirtualServiceSpec.ServiceRouting": {
                 "description": "Per backend service routes.",
                 "type": "object",
@@ -21229,6 +22963,23 @@
                                 "type": "integer",
                                 "description": "Timeout in seconds.",
                                 "minimum": 1
+                            },
+                            "rateLimits": {
+                                "description": "The rate limits to be applied.",
+                                "type": "array",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "maxItems": 3,
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/management.v1alpha1.VirtualServiceSpec.Ratelimitrule"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/api.v1.RateLimit"
+                                        }
+                                    ]
+                                }
                             },
                             "serverCertValidation": {
                                 "$ref": "#/components/schemas/management.v1alpha1.VirtualServiceSpec.Servercertvalidation"
@@ -23782,6 +25533,19 @@
                             "minor",
                             "patch"
                         ]
+                    },
+                    "previousReleases": {
+                        "type": "object",
+                        "properties": {
+                            "updateState": {
+                                "type": "string",
+                                "description": "Updates all prior non-archived releases to the deprecated state.",
+                                "enum": [
+                                    "deprecated"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -24132,6 +25896,19 @@
                             "minor",
                             "patch"
                         ]
+                    },
+                    "previousReleases": {
+                        "type": "object",
+                        "properties": {
+                            "updateState": {
+                                "type": "string",
+                                "description": "Updates all prior non-archived releases to the deprecated state.",
+                                "enum": [
+                                    "deprecated"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -24925,163 +26702,6 @@
                     "x-amplify-kind-ref-type": "soft"
                 }
             },
-            "management.v1alpha1.Secret": {
-                "description": "Definition of Secret for version v1alpha1 in group management. \n\n Secrets definitions.",
-                "type": "object",
-                "x-axway-group": "management",
-                "x-axway-version": "v1alpha1",
-                "x-axway-kind": "Secret",
-                "x-axway-plural": "secrets",
-                "x-axway-scoped": true,
-                "x-axway-scopes": [
-                    {
-                        "kind": "Environment",
-                        "plural": "environments"
-                    },
-                    {
-                        "kind": "Integration",
-                        "plural": "integrations"
-                    }
-                ],
-                "x-axway-references": {
-                    "fromResources": [
-                        {
-                            "group": "management",
-                            "kind": "Webhook",
-                            "scopeKind": "Integration",
-                            "plural": "webhooks",
-                            "versions": [
-                                "v1alpha1"
-                            ],
-                            "types": [
-                                "SOFT"
-                            ]
-                        }
-                    ],
-                    "toResources": []
-                },
-                "properties": {
-                    "group": {
-                        "type": "string",
-                        "maxLength": 80,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "readOnly": false,
-                        "description": "Resource belongs to the management group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "management"
-                        ]
-                    },
-                    "apiVersion": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "readOnly": false,
-                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "v1alpha1"
-                        ]
-                    },
-                    "kind": {
-                        "type": "string",
-                        "maxLength": 30,
-                        "readOnly": false,
-                        "description": "Resource of kind Secret. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
-                        "enum": [
-                            "Secret"
-                        ]
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "description": "Name of the Secret. Secret name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
-                    },
-                    "title": {
-                        "type": "string",
-                        "maxLength": 350,
-                        "description": "The friendly name of the Secret."
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "description": "Metadata that all server resources have. Data is generated by the server.",
-                        "properties": {
-                            "scope": {
-                                "type": "object",
-                                "description": "The scope where this resource was defined.",
-                                "properties": {
-                                    "kind": {
-                                        "type": "string",
-                                        "maxLength": 30,
-                                        "description": "The kind of the scope resource where the resource is defined.",
-                                        "enum": [
-                                            "Environment",
-                                            "Integration"
-                                        ]
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "maxLength": 100,
-                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                                        "description": "The name of the scope where the resource is defined."
-                                    }
-                                },
-                                "required": [
-                                    "kind",
-                                    "name"
-                                ]
-                            }
-                        },
-                        "required": [
-                            "scope"
-                        ]
-                    },
-                    "owner": {
-                        "$ref": "#/components/schemas/api.v1.Owner"
-                    },
-                    "finalizers": {
-                        "type": "array",
-                        "description": "List of finalizers",
-                        "items": {
-                            "$ref": "#/components/schemas/api.v1.Finalizer"
-                        }
-                    },
-                    "attributes": {
-                        "$ref": "#/components/schemas/api.v1.Attributes"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "description": "List of tags.",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 80
-                        }
-                    },
-                    "spec": {
-                        "$ref": "#/components/schemas/management.v1alpha1.SecretSpec"
-                    }
-                },
-                "required": [
-                    "spec",
-                    "kind",
-                    "apiVersion",
-                    "group",
-                    "metadata"
-                ]
-            },
-            "management.v1alpha1.SecretSpec": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "description": "Key value pairs. The value will be stored encrypted.",
-                        "x-amplify-encrypted": true,
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false
-            },
             "catalog.v1alpha1.Secret": {
                 "description": "Definition of Secret for version v1alpha1 in group catalog. \n\n Secrets definitions.",
                 "type": "object",
@@ -25234,51 +26854,43 @@
                 },
                 "additionalProperties": false
             },
-            "management.v1alpha1.AccessControlList": {
-                "description": "Definition of AccessControlList for version v1alpha1 in group management. \n\n Resource that grants access to resource(s) to the specified subject(s)",
+            "management.v1alpha1.Secret": {
+                "description": "Definition of Secret for version v1alpha1 in group management. \n\n Secrets definitions.",
                 "type": "object",
                 "x-axway-group": "management",
                 "x-axway-version": "v1alpha1",
-                "x-axway-kind": "AccessControlList",
-                "x-axway-plural": "accesscontrollists",
+                "x-axway-kind": "Secret",
+                "x-axway-plural": "secrets",
                 "x-axway-scoped": true,
                 "x-axway-scopes": [
                     {
-                        "kind": "VirtualAPIRelease",
-                        "plural": "virtualapireleases"
-                    },
-                    {
-                        "kind": "Mesh",
-                        "plural": "meshes"
-                    },
-                    {
-                        "kind": "VirtualAPI",
-                        "plural": "virtualapis"
-                    },
-                    {
-                        "kind": "WatchTopic",
-                        "plural": "watchtopics"
+                        "kind": "Integration",
+                        "plural": "integrations"
                     },
                     {
                         "kind": "Environment",
                         "plural": "environments"
-                    },
-                    {
-                        "kind": "K8SCluster",
-                        "plural": "k8sclusters"
-                    },
-                    {
-                        "kind": "Integration",
-                        "plural": "integrations"
                     }
                 ],
                 "x-axway-references": {
-                    "fromResources": [],
-                    "toResources": [
+                    "fromResources": [
                         {
                             "group": "management",
-                            "kind": "../kind",
-                            "plural": "watchtopics",
+                            "kind": "Webhook",
+                            "scopeKind": "Environment",
+                            "plural": "webhooks",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        },
+                        {
+                            "group": "management",
+                            "kind": "VirtualHost",
+                            "scopeKind": "Environment",
+                            "plural": "virtualhosts",
                             "versions": [
                                 "v1alpha1"
                             ],
@@ -25286,7 +26898,8 @@
                                 "SOFT"
                             ]
                         }
-                    ]
+                    ],
+                    "toResources": []
                 },
                 "properties": {
                     "group": {
@@ -25312,21 +26925,21 @@
                         "type": "string",
                         "maxLength": 30,
                         "readOnly": false,
-                        "description": "Resource of kind AccessControlList. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "description": "Resource of kind Secret. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
                         "enum": [
-                            "AccessControlList"
+                            "Secret"
                         ]
                     },
                     "name": {
                         "type": "string",
                         "maxLength": 100,
                         "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
-                        "description": "Name of the AccessControlList. AccessControlList name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                        "description": "Name of the Secret. Secret name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
                     },
                     "title": {
                         "type": "string",
                         "maxLength": 350,
-                        "description": "The friendly name of the AccessControlList."
+                        "description": "The friendly name of the Secret."
                     },
                     "metadata": {
                         "type": "object",
@@ -25341,13 +26954,8 @@
                                         "maxLength": 30,
                                         "description": "The kind of the scope resource where the resource is defined.",
                                         "enum": [
-                                            "VirtualAPIRelease",
-                                            "Mesh",
-                                            "VirtualAPI",
-                                            "WatchTopic",
-                                            "Environment",
-                                            "K8SCluster",
-                                            "Integration"
+                                            "Integration",
+                                            "Environment"
                                         ]
                                     },
                                     "name": {
@@ -25390,7 +26998,7 @@
                         }
                     },
                     "spec": {
-                        "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec"
+                        "$ref": "#/components/schemas/management.v1alpha1.SecretSpec"
                     }
                 },
                 "required": [
@@ -25401,162 +27009,19 @@
                     "metadata"
                 ]
             },
-            "management.v1alpha1.AccessControlListSpec": {
+            "management.v1alpha1.SecretSpec": {
                 "type": "object",
                 "properties": {
-                    "rules": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "access": {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScope"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedKind"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedResource"
-                                            }
-                                        ],
-                                        "discriminator": {
-                                            "propertyName": "level",
-                                            "mapping": {
-                                                "scope": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScope",
-                                                "scopedKind": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedKind",
-                                                "scopedResource": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedResource"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    "data": {
+                        "description": "Key value pairs. The value will be stored encrypted.",
+                        "x-amplify-encrypted": true,
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
                         }
-                    },
-                    "subjects": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "description": "Type of the subject",
-                                    "enum": [
-                                        "team"
-                                    ]
-                                },
-                                "id": {
-                                    "type": "string",
-                                    "description": "ID of the subject"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "management.v1alpha1.AccessControlListSpec.AccessLevelScope": {
-                "type": "object",
-                "properties": {
-                    "level": {
-                        "type": "string",
-                        "description": "Resource level at which access is being granted.",
-                        "enum": [
-                            "scope"
-                        ],
-                        "x-axway-code-gen-java": {
-                            "fieldType": "String"
-                        }
-                    },
-                    "allowCreateScoped": {
-                        "description": "Set true to allow users to create scoped resources.",
-                        "type": "boolean"
-                    },
-                    "allowDelete": {
-                        "description": "Set true to allow users to delete the unscoped resource.",
-                        "type": "boolean"
-                    },
-                    "allowWrite": {
-                        "description": "Set true to allow users to update the unscoped resource.",
-                        "type": "boolean"
-                    }
-                }
-            },
-            "management.v1alpha1.AccessControlListSpec.AccessLevelScopedKind": {
-                "type": "object",
-                "properties": {
-                    "level": {
-                        "type": "string",
-                        "description": "Resource level at which access is being granted.",
-                        "enum": [
-                            "scopedKind"
-                        ],
-                        "x-axway-code-gen-java": {
-                            "fieldType": "String"
-                        }
-                    },
-                    "kind": {
-                        "type": "string",
-                        "description": "The kind of scoped resources to provide access to or \"*\" for all kinds."
-                    },
-                    "allowCreate": {
-                        "description": "Set true to allow users to create scoped resources of the specified kind.",
-                        "type": "boolean"
-                    },
-                    "allowDelete": {
-                        "description": "Set true to allow users to delete scoped resources of the specified kind.",
-                        "type": "boolean"
-                    },
-                    "allowWrite": {
-                        "description": "Set true to allow users to update scoped resources of the specified kind.",
-                        "type": "boolean"
                     }
                 },
-                "required": [
-                    "kind"
-                ]
-            },
-            "management.v1alpha1.AccessControlListSpec.AccessLevelScopedResource": {
-                "type": "object",
-                "properties": {
-                    "level": {
-                        "type": "string",
-                        "description": "Resource level at which access is being granted.",
-                        "enum": [
-                            "scopedResource"
-                        ],
-                        "x-axway-code-gen-java": {
-                            "fieldType": "String"
-                        }
-                    },
-                    "kind": {
-                        "type": "string",
-                        "description": "The kind of scoped resources to provide access."
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the scoped resource to provide access to.",
-                        "x-amplify-kind-ref": "../kind",
-                        "x-amplify-kind-ref-type": "soft",
-                        "x-amplify-kind-ref-collateral": [
-                            "../"
-                        ]
-                    },
-                    "allowDelete": {
-                        "description": "Set true to allow users to delete the referenced scoped resource.",
-                        "type": "boolean"
-                    },
-                    "allowWrite": {
-                        "description": "Set true to allow users to update the referenced scoped resource.",
-                        "type": "boolean"
-                    }
-                },
-                "required": [
-                    "kind",
-                    "name"
-                ]
+                "additionalProperties": false
             },
             "catalog.v1alpha1.AccessControlList": {
                 "description": "Definition of AccessControlList for version v1alpha1 in group catalog. \n\n Resource that grants access to resource(s) to the specified subject(s)",
@@ -25568,56 +27033,56 @@
                 "x-axway-scoped": true,
                 "x-axway-scopes": [
                     {
-                        "kind": "Category",
-                        "plural": "categories"
-                    },
-                    {
-                        "kind": "Marketplace",
-                        "plural": "marketplaces"
-                    },
-                    {
-                        "kind": "Application",
-                        "plural": "applications"
-                    },
-                    {
-                        "kind": "ProductRelease",
-                        "plural": "productreleases"
-                    },
-                    {
-                        "kind": "Product",
-                        "plural": "products"
-                    },
-                    {
                         "kind": "Asset",
                         "plural": "assets"
-                    },
-                    {
-                        "kind": "AuthorizationProfile",
-                        "plural": "authprofiles"
-                    },
-                    {
-                        "kind": "ProductPlan",
-                        "plural": "productplans"
-                    },
-                    {
-                        "kind": "Subscription",
-                        "plural": "subscriptions"
-                    },
-                    {
-                        "kind": "AssetRelease",
-                        "plural": "assetreleases"
-                    },
-                    {
-                        "kind": "Stage",
-                        "plural": "stages"
                     },
                     {
                         "kind": "SupportContact",
                         "plural": "supportcontacts"
                     },
                     {
+                        "kind": "AssetRelease",
+                        "plural": "assetreleases"
+                    },
+                    {
+                        "kind": "Application",
+                        "plural": "applications"
+                    },
+                    {
                         "kind": "ProductPlanUnit",
                         "plural": "productplanunits"
+                    },
+                    {
+                        "kind": "AuthorizationProfile",
+                        "plural": "authprofiles"
+                    },
+                    {
+                        "kind": "Marketplace",
+                        "plural": "marketplaces"
+                    },
+                    {
+                        "kind": "Stage",
+                        "plural": "stages"
+                    },
+                    {
+                        "kind": "Subscription",
+                        "plural": "subscriptions"
+                    },
+                    {
+                        "kind": "ProductRelease",
+                        "plural": "productreleases"
+                    },
+                    {
+                        "kind": "ProductPlan",
+                        "plural": "productplans"
+                    },
+                    {
+                        "kind": "Product",
+                        "plural": "products"
+                    },
+                    {
+                        "kind": "Category",
+                        "plural": "categories"
                     }
                 ],
                 "x-axway-references": {
@@ -25689,19 +27154,19 @@
                                         "maxLength": 30,
                                         "description": "The kind of the scope resource where the resource is defined.",
                                         "enum": [
-                                            "Category",
-                                            "Marketplace",
-                                            "Application",
-                                            "ProductRelease",
-                                            "Product",
                                             "Asset",
-                                            "AuthorizationProfile",
-                                            "ProductPlan",
-                                            "Subscription",
-                                            "AssetRelease",
-                                            "Stage",
                                             "SupportContact",
-                                            "ProductPlanUnit"
+                                            "AssetRelease",
+                                            "Application",
+                                            "ProductPlanUnit",
+                                            "AuthorizationProfile",
+                                            "Marketplace",
+                                            "Stage",
+                                            "Subscription",
+                                            "ProductRelease",
+                                            "ProductPlan",
+                                            "Product",
+                                            "Category"
                                         ]
                                     },
                                     "name": {
@@ -25873,6 +27338,330 @@
                 ]
             },
             "catalog.v1alpha1.AccessControlListSpec.AccessLevelScopedResource": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "description": "Resource level at which access is being granted.",
+                        "enum": [
+                            "scopedResource"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "kind": {
+                        "type": "string",
+                        "description": "The kind of scoped resources to provide access."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the scoped resource to provide access to.",
+                        "x-amplify-kind-ref": "../kind",
+                        "x-amplify-kind-ref-type": "soft",
+                        "x-amplify-kind-ref-collateral": [
+                            "../"
+                        ]
+                    },
+                    "allowDelete": {
+                        "description": "Set true to allow users to delete the referenced scoped resource.",
+                        "type": "boolean"
+                    },
+                    "allowWrite": {
+                        "description": "Set true to allow users to update the referenced scoped resource.",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "kind",
+                    "name"
+                ]
+            },
+            "management.v1alpha1.AccessControlList": {
+                "description": "Definition of AccessControlList for version v1alpha1 in group management. \n\n Resource that grants access to resource(s) to the specified subject(s)",
+                "type": "object",
+                "x-axway-group": "management",
+                "x-axway-version": "v1alpha1",
+                "x-axway-kind": "AccessControlList",
+                "x-axway-plural": "accesscontrollists",
+                "x-axway-scoped": true,
+                "x-axway-scopes": [
+                    {
+                        "kind": "VirtualAPIRelease",
+                        "plural": "virtualapireleases"
+                    },
+                    {
+                        "kind": "Environment",
+                        "plural": "environments"
+                    },
+                    {
+                        "kind": "Mesh",
+                        "plural": "meshes"
+                    },
+                    {
+                        "kind": "VirtualAPI",
+                        "plural": "virtualapis"
+                    },
+                    {
+                        "kind": "WatchTopic",
+                        "plural": "watchtopics"
+                    },
+                    {
+                        "kind": "Integration",
+                        "plural": "integrations"
+                    },
+                    {
+                        "kind": "K8SCluster",
+                        "plural": "k8sclusters"
+                    }
+                ],
+                "x-axway-references": {
+                    "fromResources": [],
+                    "toResources": [
+                        {
+                            "group": "management",
+                            "kind": "../kind",
+                            "plural": "watchtopics",
+                            "versions": [
+                                "v1alpha1"
+                            ],
+                            "types": [
+                                "SOFT"
+                            ]
+                        }
+                    ]
+                },
+                "properties": {
+                    "group": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "readOnly": false,
+                        "description": "Resource belongs to the management group. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "management"
+                        ]
+                    },
+                    "apiVersion": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "readOnly": false,
+                        "description": "Resource version is v1alpha1. The version defines the structure of the resource. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "v1alpha1"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "readOnly": false,
+                        "description": "Resource of kind AccessControlList. Cannot be updated. The server infers this from the endpoint the client submits the request to.",
+                        "enum": [
+                            "AccessControlList"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                        "description": "Name of the AccessControlList. AccessControlList name is unique and cannot be updated. The characters allowed in names are: digits (0-9), lower case letters (a-z), -, and ."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 350,
+                        "description": "The friendly name of the AccessControlList."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Metadata that all server resources have. Data is generated by the server.",
+                        "properties": {
+                            "scope": {
+                                "type": "object",
+                                "description": "The scope where this resource was defined.",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "description": "The kind of the scope resource where the resource is defined.",
+                                        "enum": [
+                                            "VirtualAPIRelease",
+                                            "Environment",
+                                            "Mesh",
+                                            "VirtualAPI",
+                                            "WatchTopic",
+                                            "Integration",
+                                            "K8SCluster"
+                                        ]
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*",
+                                        "description": "The name of the scope where the resource is defined."
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "scope"
+                        ]
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/api.v1.Owner"
+                    },
+                    "finalizers": {
+                        "type": "array",
+                        "description": "List of finalizers",
+                        "items": {
+                            "$ref": "#/components/schemas/api.v1.Finalizer"
+                        }
+                    },
+                    "attributes": {
+                        "$ref": "#/components/schemas/api.v1.Attributes"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tags.",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        }
+                    },
+                    "spec": {
+                        "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec"
+                    }
+                },
+                "required": [
+                    "spec",
+                    "kind",
+                    "apiVersion",
+                    "group",
+                    "metadata"
+                ]
+            },
+            "management.v1alpha1.AccessControlListSpec": {
+                "type": "object",
+                "properties": {
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "access": {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScope"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedKind"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedResource"
+                                            }
+                                        ],
+                                        "discriminator": {
+                                            "propertyName": "level",
+                                            "mapping": {
+                                                "scope": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScope",
+                                                "scopedKind": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedKind",
+                                                "scopedResource": "#/components/schemas/management.v1alpha1.AccessControlListSpec.AccessLevelScopedResource"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "subjects": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "description": "Type of the subject",
+                                    "enum": [
+                                        "team"
+                                    ]
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "ID of the subject"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "management.v1alpha1.AccessControlListSpec.AccessLevelScope": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "description": "Resource level at which access is being granted.",
+                        "enum": [
+                            "scope"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "allowCreateScoped": {
+                        "description": "Set true to allow users to create scoped resources.",
+                        "type": "boolean"
+                    },
+                    "allowDelete": {
+                        "description": "Set true to allow users to delete the unscoped resource.",
+                        "type": "boolean"
+                    },
+                    "allowWrite": {
+                        "description": "Set true to allow users to update the unscoped resource.",
+                        "type": "boolean"
+                    }
+                }
+            },
+            "management.v1alpha1.AccessControlListSpec.AccessLevelScopedKind": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "description": "Resource level at which access is being granted.",
+                        "enum": [
+                            "scopedKind"
+                        ],
+                        "x-axway-code-gen-java": {
+                            "fieldType": "String"
+                        }
+                    },
+                    "kind": {
+                        "type": "string",
+                        "description": "The kind of scoped resources to provide access to or \"*\" for all kinds."
+                    },
+                    "allowCreate": {
+                        "description": "Set true to allow users to create scoped resources of the specified kind.",
+                        "type": "boolean"
+                    },
+                    "allowDelete": {
+                        "description": "Set true to allow users to delete scoped resources of the specified kind.",
+                        "type": "boolean"
+                    },
+                    "allowWrite": {
+                        "description": "Set true to allow users to update scoped resources of the specified kind.",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "kind"
+                ]
+            },
+            "management.v1alpha1.AccessControlListSpec.AccessLevelScopedResource": {
                 "type": "object",
                 "properties": {
                     "level": {
